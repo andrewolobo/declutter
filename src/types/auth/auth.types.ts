@@ -20,7 +20,7 @@ export interface LoginDTO {
  * OAuth login DTO
  */
 export interface OAuthLoginDTO {
-  provider: "Google" | "Microsoft";
+  provider: "Google" | "Microsoft" | "Facebook";
   accessToken: string;
 }
 
@@ -84,5 +84,5 @@ export interface OAuthUserInfo {
   email: string;
   name: string;
   picture?: string;
-  provider: "google" | "microsoft";
+  provider: "google" | "microsoft" | "facebook";
 }

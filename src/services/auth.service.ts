@@ -266,12 +266,18 @@ export class AuthService {
    * Get user info from OAuth provider
    */
   private async getOAuthUserInfo(
-    provider: "Google" | "Microsoft",
+    provider: "Google" | "Microsoft" | "Facebook",
     accessToken: string
   ): Promise<OAuthUserInfo | null> {
     try {
-      const config =
-        provider === "Google" ? oauthConfig.google : oauthConfig.microsoft;
+      let config;
+      if (provider === "Google") {
+        config = oauthConfig.google;
+      } else if (provider === "Microsoft") {
+        config = oauthConfig.microsoft;
+      } else {
+        config = oauthConfig.facebook;
+      }
 
       const response = await axios.get(config.userInfoUrl, {
         headers: {
@@ -287,14 +293,22 @@ export class AuthService {
           picture: response.data.picture,
           provider: "google",
         };
-      } else {
-        // Microsoft
+      } else if (provider === "Microsoft") {
         return {
           id: response.data.id,
           email: response.data.mail || response.data.userPrincipalName,
           name: response.data.displayName,
           picture: undefined, // Microsoft Graph doesn't return picture in basic profile
           provider: "microsoft",
+        };
+      } else {
+        // Facebook
+        return {
+          id: response.data.id,
+          email: response.data.email,
+          name: response.data.name,
+          picture: response.data.picture?.data?.url,
+          provider: "facebook",
         };
       }
     } catch (error) {

@@ -36,13 +36,14 @@ DEC_L is a modern classifieds platform designed with an Instagram-style interfac
 ## ✨ Features
 
 ### User Features
+
 - **Registration & Authentication**
   - Email/password registration
   - OAuth login (Google, Microsoft)
   - JWT-based authentication
   - Password strength validation
-  
 - **Post Management**
+
   - Create posts with multiple images (up to 10)
   - Save as draft for later editing
   - Schedule posts for future publication
@@ -51,6 +52,7 @@ DEC_L is a modern classifieds platform designed with an Instagram-style interfac
   - View tracking and analytics
 
 - **Search & Discovery**
+
   - Advanced search with filters (category, price range, location)
   - Infinite scroll feed
   - Trending posts
@@ -63,6 +65,7 @@ DEC_L is a modern classifieds platform designed with an Instagram-style interfac
   - Account settings
 
 ### Payment System
+
 - **Mobile Money Integration**
   - Create payment records
   - Automated SMS-based confirmation
@@ -71,6 +74,7 @@ DEC_L is a modern classifieds platform designed with an Instagram-style interfac
   - Multiple payment methods (Card, Mobile Money, Bank Transfer)
 
 ### Admin Features
+
 - Post approval/rejection
 - Category management
 - Pricing tier management
@@ -119,6 +123,7 @@ DEC_L is a modern classifieds platform designed with an Instagram-style interfac
 ### Technology Stack
 
 #### Backend (Current)
+
 - **Runtime:** Node.js (v18+)
 - **Language:** TypeScript 5.9.3
 - **ORM:** Prisma 6.19.1
@@ -128,12 +133,14 @@ DEC_L is a modern classifieds platform designed with an Instagram-style interfac
 - **Validation:** Joi 18.0.2
 
 #### Utilities
+
 - **Password Hashing:** bcrypt (12 salt rounds)
 - **Token Management:** jsonwebtoken
 - **HTTP Client:** axios (for OAuth)
 - **Mock Data:** @faker-js/faker
 
 #### Frontend (Planned)
+
 - **Framework:** Svelte (Recommended)
 - **Alternative:** React
 - **UI Components:** Material-UI
@@ -152,19 +159,22 @@ DEC_L is a modern classifieds platform designed with an Instagram-style interfac
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/andrewolobo/dec_l.git
    cd dec_l
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Set up environment variables**
-   
+
    Create a `.env` file in the root directory:
+
    ```env
    # Database
    DATABASE_URL="sqlserver://localhost:1433;database=dec_l;user=sa;password=YourPassword;trustServerCertificate=true"
@@ -191,6 +201,7 @@ DEC_L is a modern classifieds platform designed with an Instagram-style interfac
    ```
 
 4. **Run database migrations**
+
    ```bash
    npx prisma migrate dev
    npx prisma generate
@@ -239,25 +250,25 @@ npx prisma migrate deploy
 
 ### ✅ Completed (90% Overall)
 
-| Component | Status | Coverage | Tests |
-|-----------|--------|----------|-------|
-| **Type Definitions** | ✅ Complete | - | - |
-| **Utilities** | ✅ Complete | 90.38% | 27 |
-| **Configuration** | ✅ Complete | 100% | - |
-| **Repositories (DAL)** | ✅ Complete (7/7) | 0% | - |
-| **Services** | ✅ Complete (5/5) | 80.29% | 144 |
-| **Tests** | ⚠️ In Progress | 58.34% | 144 |
+| Component              | Status            | Coverage | Tests |
+| ---------------------- | ----------------- | -------- | ----- |
+| **Type Definitions**   | ✅ Complete       | -        | -     |
+| **Utilities**          | ✅ Complete       | 90.38%   | 27    |
+| **Configuration**      | ✅ Complete       | 100%     | -     |
+| **Repositories (DAL)** | ✅ Complete (7/7) | 0%       | -     |
+| **Services**           | ✅ Complete (5/5) | 80.29%   | 144   |
+| **Tests**              | ⚠️ In Progress    | 58.34%   | 144   |
 
 ### Service Implementation Details
 
-| Service | Methods | Tests | Coverage | Status |
-|---------|---------|-------|----------|--------|
-| AuthService | 4 | 19 | 100% | ✅ |
-| UserService | 9 | 31 | 98.71% | ✅ |
-| PostService | 10 | 47 | 51.92% | ⚠️ |
-| CategoryService | 5 | 21 | 100% | ✅ |
-| PaymentService | 6 | 26 | 100% | ✅ |
-| **TOTAL** | **34** | **144** | **58.34%** | **⚠️** |
+| Service         | Methods | Tests   | Coverage   | Status |
+| --------------- | ------- | ------- | ---------- | ------ |
+| AuthService     | 4       | 19      | 100%       | ✅     |
+| UserService     | 9       | 31      | 98.71%     | ✅     |
+| PostService     | 10      | 47      | 51.92%     | ⚠️     |
+| CategoryService | 5       | 21      | 100%       | ✅     |
+| PaymentService  | 6       | 26      | 100%       | ✅     |
+| **TOTAL**       | **34**  | **144** | **58.34%** | **⚠️** |
 
 ### ⏳ Remaining Work
 
@@ -322,7 +333,7 @@ Comprehensive documentation is available in the `documentation/` folder:
 3. **[DAL_IMPLEMENTATION.md](documentation/3.%20DAL_IMPLEMENTATION.md)** - Data Access Layer documentation
 4. **[SERVICE_LAYER.md](documentation/4.%20SERVICE_LAYER.md)** - Service layer implementation
 5. **[TEST_IMPLEMENTATION.md](documentation/5.%20TEST_IMPLEMENTATION.md)** - Testing guide and patterns
-6. **[__STATUS_IMPLEMENTATION__.md](documentation/__STATUS_IMPLEMENTATION__.md)** - Current implementation status
+6. **[**STATUS_IMPLEMENTATION**.md](documentation/__STATUS_IMPLEMENTATION__.md)** - Current implementation status
 
 ---
 
@@ -366,13 +377,12 @@ PricingTiers ─── Payments
   - bcrypt hashing (12 salt rounds)
   - Strong password validation
   - No plaintext storage
-  
 - ✅ **Token Security**
   - Separate access & refresh tokens
   - Short access token lifetime (15 min)
   - Secure token verification
-  
 - ✅ **OAuth Security**
+
   - Provider token validation
   - Direct user info fetching
   - Pre-verified email for OAuth users

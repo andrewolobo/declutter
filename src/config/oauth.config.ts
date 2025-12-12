@@ -1,19 +1,32 @@
 /**
- * OAuth configuration for Google and Microsoft providers
+ * OAuth configuration for Google, Microsoft, and Facebook providers
  */
 export const oauthConfig = {
   google: {
-    clientId: process.env.GOOGLE_CLIENT_ID || '',
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-    redirectUri: process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/auth/google/callback',
-    scope: ['openid', 'profile', 'email'],
-    userInfoUrl: 'https://www.googleapis.com/oauth2/v2/userinfo',
+    clientId: process.env.GOOGLE_CLIENT_ID || "",
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+    redirectUri:
+      process.env.GOOGLE_REDIRECT_URI ||
+      "http://localhost:3000/auth/google/callback",
+    scope: ["openid", "profile", "email"],
+    userInfoUrl: "https://www.googleapis.com/oauth2/v2/userinfo",
   },
   microsoft: {
-    clientId: process.env.MICROSOFT_CLIENT_ID || '',
-    clientSecret: process.env.MICROSOFT_CLIENT_SECRET || '',
-    redirectUri: process.env.MICROSOFT_REDIRECT_URI || 'http://localhost:3000/auth/microsoft/callback',
-    scope: ['openid', 'profile', 'email'],
-    userInfoUrl: 'https://graph.microsoft.com/v1.0/me',
+    clientId: process.env.MICROSOFT_CLIENT_ID || "",
+    clientSecret: process.env.MICROSOFT_CLIENT_SECRET || "",
+    redirectUri:
+      process.env.MICROSOFT_REDIRECT_URI ||
+      "http://localhost:3000/auth/microsoft/callback",
+    scope: ["openid", "profile", "email"],
+    userInfoUrl: "https://graph.microsoft.com/v1.0/me",
+  },
+  facebook: {
+    clientId: process.env.FACEBOOK_APP_ID || "",
+    clientSecret: process.env.FACEBOOK_APP_SECRET || "",
+    redirectUri:
+      process.env.FACEBOOK_REDIRECT_URI ||
+      "http://localhost:3000/auth/facebook/callback",
+    scope: ["email", "public_profile"],
+    userInfoUrl: "https://graph.facebook.com/me?fields=id,name,email,picture",
   },
 };

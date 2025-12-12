@@ -8,13 +8,17 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:unit": "jest --testPathPattern=unit",
-    "test:integration": "jest --testPathPattern=integration",
+    "test:integration": "jest --testPathPattern=integration --runInBand",
     "build": "tsc",
-    "dev": "ts-node src/index.ts"
+    "dev": "ts-node src/server.ts",
+    "dev:watch": "nodemon --watch src --exec ts-node src/server.ts",
+    "start": "node dist/server.js"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
     "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
     "@types/jest": "^29.5.14",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.0.0",
@@ -31,6 +35,10 @@
     "@prisma/client": "^6.19.1",
     "axios": "^1.13.2",
     "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
     "joi": "^18.0.2",
     "jsonwebtoken": "^9.0.3"
   }
