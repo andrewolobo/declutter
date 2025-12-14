@@ -1,0 +1,30 @@
+### ============================================
+### Environment Variables
+### ============================================
+
+@baseUrl = http://localhost:3000
+@apiPrefix = /api/v1
+
+### ============================================
+### Auth Variables (populated from responses)
+### ============================================
+
+@accessToken = 
+@refreshToken = 
+@userId = 
+
+### ============================================
+### Resource IDs (populated from responses)
+### ============================================
+
+@postId = 
+@categoryId = 
+@paymentId = 
+
+### ============================================
+### Test User Credentials
+### ============================================
+
+@testEmail = test-{{$timestamp}}@example.com
+@testPassword = TestPassword123!
+@testFullName = Test User

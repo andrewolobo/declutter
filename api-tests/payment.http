@@ -1,0 +1,221 @@
+### ============================================
+### Payment Management Endpoints
+### Base URL: http://localhost:3000/api/v1/payments
+### ============================================
+
+@baseUrl = http://localhost:3000
+@apiPrefix = /api/v1
+
+### Replace with your actual tokens and IDs
+@accessToken = your-access-token-here
+@postId = your-post-id-here
+@pricingTierId = 1
+
+###
+
+### ============================================
+### 1. Create Payment (Private)
+### ============================================
+
+# @name createPayment
+POST {{baseUrl}}{{apiPrefix}}/payments
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "postId": {{postId}},
+  "pricingTierId": {{pricingTierId}},
+  "paymentMethod": "Card"
+}
+
+### Capture payment ID from response
+@paymentId = {{createPayment.response.body.id}}
+
+###
+
+### Create Payment - Mobile Money
+# @name createPaymentMobileMoney
+POST {{baseUrl}}{{apiPrefix}}/payments
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "postId": {{postId}},
+  "pricingTierId": {{pricingTierId}},
+  "paymentMethod": "MobileMoney"
+}
+
+###
+
+### Create Payment - Bank Transfer
+POST {{baseUrl}}{{apiPrefix}}/payments
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "postId": {{postId}},
+  "pricingTierId": {{pricingTierId}},
+  "paymentMethod": "BankTransfer"
+}
+
+###
+
+### ============================================
+### 2. Get Payment by ID (Owner Only)
+### ============================================
+
+GET {{baseUrl}}{{apiPrefix}}/payments/{{paymentId}}
+Authorization: Bearer {{accessToken}}
+
+###
+
+### ============================================
+### 3. Confirm Payment (Private)
+### ============================================
+
+POST {{baseUrl}}{{apiPrefix}}/payments/{{paymentId}}/confirm
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "transactionReference": "TXN-{{$timestamp}}-{{$randomInt}}"
+}
+
+###
+
+### ============================================
+### 4. Get User Payment History (Private)
+### ============================================
+
+GET {{baseUrl}}{{apiPrefix}}/payments/user/history
+Authorization: Bearer {{accessToken}}
+
+###
+
+### ============================================
+### 5. Get Post Payments (Owner Only)
+### ============================================
+
+GET {{baseUrl}}{{apiPrefix}}/payments/post/{{postId}}
+Authorization: Bearer {{accessToken}}
+
+###
+
+### ============================================
+### 6. Cancel Payment (Private)
+### ============================================
+
+POST {{baseUrl}}{{apiPrefix}}/payments/{{paymentId}}/cancel
+Authorization: Bearer {{accessToken}}
+
+###
+
+### ============================================
+### ERROR TESTS - Expected Errors
+### ============================================
+
+### Create Payment - No Authentication (401)
+POST {{baseUrl}}{{apiPrefix}}/payments
+Content-Type: application/json
+
+{
+  "postId": 1,
+  "pricingTierId": 1,
+  "paymentMethod": "Card"
+}
+
+###
+
+### Create Payment - Invalid Payment Method (400)
+POST {{baseUrl}}{{apiPrefix}}/payments
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "postId": {{postId}},
+  "pricingTierId": {{pricingTierId}},
+  "paymentMethod": "Bitcoin"
+}
+
+###
+
+### Create Payment - Missing Post ID (400)
+POST {{baseUrl}}{{apiPrefix}}/payments
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "pricingTierId": {{pricingTierId}},
+  "paymentMethod": "Card"
+}
+
+###
+
+### Create Payment - Missing Pricing Tier (400)
+POST {{baseUrl}}{{apiPrefix}}/payments
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "postId": {{postId}},
+  "paymentMethod": "Card"
+}
+
+###
+
+### Create Payment - Invalid Post ID (404)
+POST {{baseUrl}}{{apiPrefix}}/payments
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "postId": 99999,
+  "pricingTierId": {{pricingTierId}},
+  "paymentMethod": "Card"
+}
+
+###
+
+### Get Non-Existent Payment (404)
+GET {{baseUrl}}{{apiPrefix}}/payments/99999
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Get Payment - Not Owner (403)
+GET {{baseUrl}}{{apiPrefix}}/payments/1
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Confirm Payment - Missing Transaction Reference (400)
+POST {{baseUrl}}{{apiPrefix}}/payments/{{paymentId}}/confirm
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{}
+
+###
+
+### Confirm Payment - Not Owner (403)
+POST {{baseUrl}}{{apiPrefix}}/payments/1/confirm
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "transactionReference": "TXN-12345"
+}
+
+###
+
+### Cancel Payment - Not Owner (403)
+POST {{baseUrl}}{{apiPrefix}}/payments/1/cancel
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Get Post Payments - Not Post Owner (403)
+GET {{baseUrl}}{{apiPrefix}}/payments/post/1
+Authorization: Bearer {{accessToken}}
+
+###

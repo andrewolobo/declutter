@@ -1,0 +1,208 @@
+### ============================================
+### User Management Endpoints
+### Base URL: http://localhost:3000/api/v1/users
+### ============================================
+
+@baseUrl = http://localhost:3000
+@apiPrefix = /api/v1
+
+### Replace with your actual access token from auth.http
+@accessToken = your-access-token-here
+
+###
+
+### ============================================
+### 1. Get User Profile (Private)
+### ============================================
+
+GET {{baseUrl}}{{apiPrefix}}/users/profile
+Authorization: Bearer {{accessToken}}
+
+###
+
+### ============================================
+### 2. Update User Profile (Private)
+### ============================================
+
+PUT {{baseUrl}}{{apiPrefix}}/users/profile
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "fullName": "Updated Test User",
+  "location": "Kampala, Uganda",
+  "bio": "Software developer passionate about technology",
+  "phoneNumber": "+256700123456"
+}
+
+###
+
+### ============================================
+### 3. Change Password (Private)
+### ============================================
+
+POST {{baseUrl}}{{apiPrefix}}/users/change-password
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "currentPassword": "TestPassword123!",
+  "newPassword": "NewTestPassword123!"
+}
+
+###
+
+### ============================================
+### 4. Request Password Reset (Public)
+### ============================================
+
+POST {{baseUrl}}{{apiPrefix}}/users/request-password-reset
+Content-Type: application/json
+
+{
+  "emailAddress": "test@example.com"
+}
+
+###
+
+### ============================================
+### 5. Reset Password with Token (Public)
+### ============================================
+
+POST {{baseUrl}}{{apiPrefix}}/users/reset-password
+Content-Type: application/json
+
+{
+  "token": "reset-token-from-email",
+  "newPassword": "ResetPassword123!"
+}
+
+###
+
+### ============================================
+### 6. Verify Email (Public)
+### ============================================
+
+POST {{baseUrl}}{{apiPrefix}}/users/verify-email
+Content-Type: application/json
+
+{
+  "token": "email-verification-token-from-email"
+}
+
+###
+
+### ============================================
+### 7. Verify Phone Number (Private)
+### ============================================
+
+POST {{baseUrl}}{{apiPrefix}}/users/verify-phone
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "phoneNumber": "+256700123456",
+  "code": "123456"
+}
+
+###
+
+### ============================================
+### 8. Get User Posts Summary (Private)
+### ============================================
+
+GET {{baseUrl}}{{apiPrefix}}/users/posts-summary
+Authorization: Bearer {{accessToken}}
+
+###
+
+### ============================================
+### 9. Delete User Account (Private)
+### ============================================
+
+DELETE {{baseUrl}}{{apiPrefix}}/users/account
+Authorization: Bearer {{accessToken}}
+
+###
+
+### ============================================
+### ERROR TESTS - Expected Errors
+### ============================================
+
+### Get Profile - No Authentication (401)
+GET {{baseUrl}}{{apiPrefix}}/users/profile
+
+###
+
+### Get Profile - Invalid Token (401)
+GET {{baseUrl}}{{apiPrefix}}/users/profile
+Authorization: Bearer invalid-token-string
+
+###
+
+### Update Profile - Short Full Name (400)
+PUT {{baseUrl}}{{apiPrefix}}/users/profile
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "fullName": "A"
+}
+
+###
+
+### Update Profile - Invalid Phone Format (400)
+PUT {{baseUrl}}{{apiPrefix}}/users/profile
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "phoneNumber": "invalid-phone"
+}
+
+###
+
+### Change Password - Wrong Current Password (401)
+POST {{baseUrl}}{{apiPrefix}}/users/change-password
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "currentPassword": "WrongPassword123!",
+  "newPassword": "NewPassword123!"
+}
+
+###
+
+### Change Password - Short New Password (400)
+POST {{baseUrl}}{{apiPrefix}}/users/change-password
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "currentPassword": "TestPassword123!",
+  "newPassword": "short"
+}
+
+###
+
+### Request Password Reset - Invalid Email (400)
+POST {{baseUrl}}{{apiPrefix}}/users/request-password-reset
+Content-Type: application/json
+
+{
+  "emailAddress": "not-an-email"
+}
+
+###
+
+### Reset Password - Invalid Token (401)
+POST {{baseUrl}}{{apiPrefix}}/users/reset-password
+Content-Type: application/json
+
+{
+  "token": "invalid-token",
+  "newPassword": "NewPassword123!"
+}
+
+###

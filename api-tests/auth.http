@@ -1,0 +1,240 @@
+### ============================================
+### Authentication Endpoints
+### Base URL: http://localhost:3000/api/v1/auth
+### ============================================
+
+@baseUrl = http://localhost:3000
+@apiPrefix = /api/v1
+
+### ============================================
+### 1. Register New User
+### ============================================
+
+# @name register
+POST {{baseUrl}}{{apiPrefix}}/auth/register
+Content-Type: application/json
+
+{
+  "emailAddress": "test-{{$timestamp}}@example.com",
+  "password": "TestPassword123!",
+  "fullName": "Test User",
+  "phoneNumber": "+256700123456"
+}
+
+### Capture tokens and user ID from response
+@accessToken = {{register.response.body.data.tokens.accessToken}}
+@refreshToken = {{register.response.body.data.tokens.refreshToken}}
+@userId = {{register.response.body.data.user.id}}
+
+###
+
+### ============================================
+### 2. Login User
+### ============================================
+
+# @name login
+POST {{baseUrl}}{{apiPrefix}}/auth/login
+Content-Type: application/json
+
+{
+  "emailAddress": "test@example.com",
+  "password": "TestPassword123!"
+}
+
+### Update tokens from login response
+@accessToken = {{login.response.body.data.tokens.accessToken}}
+@refreshToken = {{login.response.body.data.tokens.refreshToken}}
+
+###
+
+### ============================================
+### 3. Refresh Access Token
+### ============================================
+
+# @name refresh
+POST {{baseUrl}}{{apiPrefix}}/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### Update access token from refresh
+@accessToken = {{refresh.response.body.data.accessToken}}
+
+###
+
+### ============================================
+### 4. OAuth - Google Login
+### ============================================
+
+POST {{baseUrl}}{{apiPrefix}}/auth/oauth/google
+Content-Type: application/json
+
+{
+  "provider": "Google",
+  "accessToken": "your-google-access-token-here"
+}
+
+###
+
+### ============================================
+### 5. OAuth - Microsoft Login
+### ============================================
+
+POST {{baseUrl}}{{apiPrefix}}/auth/oauth/microsoft
+Content-Type: application/json
+
+{
+  "provider": "Microsoft",
+  "accessToken": "your-microsoft-access-token-here"
+}
+
+###
+
+### ============================================
+### 6. OAuth - Facebook Login
+### ============================================
+
+POST {{baseUrl}}{{apiPrefix}}/auth/oauth/facebook
+Content-Type: application/json
+
+{
+  "provider": "Facebook",
+  "accessToken": "your-facebook-access-token-here"
+}
+
+###
+
+### ============================================
+### VALIDATION TESTS - Expected Errors
+### ============================================
+
+### Register - Missing Email (400)
+POST {{baseUrl}}{{apiPrefix}}/auth/register
+Content-Type: application/json
+
+{
+  "password": "TestPassword123!",
+  "fullName": "Test User"
+}
+
+###
+
+### Register - Invalid Email Format (400)
+POST {{baseUrl}}{{apiPrefix}}/auth/register
+Content-Type: application/json
+
+{
+  "emailAddress": "not-an-email",
+  "password": "TestPassword123!",
+  "fullName": "Test User"
+}
+
+###
+
+### Register - Short Password (400)
+POST {{baseUrl}}{{apiPrefix}}/auth/register
+Content-Type: application/json
+
+{
+  "emailAddress": "test-short@example.com",
+  "password": "short",
+  "fullName": "Test User"
+}
+
+###
+
+### Register - Missing Full Name (400)
+POST {{baseUrl}}{{apiPrefix}}/auth/register
+Content-Type: application/json
+
+{
+  "emailAddress": "test-noname@example.com",
+  "password": "TestPassword123!"
+}
+
+###
+
+### Register - Duplicate Email (409)
+POST {{baseUrl}}{{apiPrefix}}/auth/register
+Content-Type: application/json
+
+{
+  "emailAddress": "test@example.com",
+  "password": "TestPassword123!",
+  "fullName": "Duplicate User"
+}
+
+###
+
+### Login - Wrong Password (401)
+POST {{baseUrl}}{{apiPrefix}}/auth/login
+Content-Type: application/json
+
+{
+  "emailAddress": "test@example.com",
+  "password": "WrongPassword123!"
+}
+
+###
+
+### Login - Non-existent User (401)
+POST {{baseUrl}}{{apiPrefix}}/auth/login
+Content-Type: application/json
+
+{
+  "emailAddress": "nonexistent@example.com",
+  "password": "TestPassword123!"
+}
+
+###
+
+### Login - Missing Password (400)
+POST {{baseUrl}}{{apiPrefix}}/auth/login
+Content-Type: application/json
+
+{
+  "emailAddress": "test@example.com"
+}
+
+###
+
+### Refresh - Invalid Token (401)
+POST {{baseUrl}}{{apiPrefix}}/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "invalid-token-string"
+}
+
+###
+
+### Refresh - Missing Token (400)
+POST {{baseUrl}}{{apiPrefix}}/auth/refresh
+Content-Type: application/json
+
+{}
+
+###
+
+### OAuth - Invalid Provider (400)
+POST {{baseUrl}}{{apiPrefix}}/auth/oauth/google
+Content-Type: application/json
+
+{
+  "provider": "InvalidProvider",
+  "accessToken": "some-token"
+}
+
+###
+
+### OAuth - Missing Access Token (400)
+POST {{baseUrl}}{{apiPrefix}}/auth/oauth/facebook
+Content-Type: application/json
+
+{
+  "provider": "Facebook"
+}
+
+###

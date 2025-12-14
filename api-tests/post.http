@@ -1,0 +1,320 @@
+### ============================================
+### Post Management Endpoints
+### Base URL: http://localhost:3000/api/v1/posts
+### ============================================
+
+@baseUrl = http://localhost:3000
+@apiPrefix = /api/v1
+
+### Replace with your actual tokens and IDs
+@accessToken = your-access-token-here
+@categoryId = 1
+@userId = your-user-id-here
+
+###
+
+### ============================================
+### 1. Create Post (Private)
+### ============================================
+
+# @name createPost
+POST {{baseUrl}}{{apiPrefix}}/posts
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "iPhone 13 Pro Max - 256GB",
+  "categoryId": {{categoryId}},
+  "description": "Excellent condition iPhone 13 Pro Max with 256GB storage. Includes original box, charger, and screen protector. Battery health at 95%. No scratches or damage.",
+  "price": 2500000,
+  "location": "Kampala, Uganda",
+  "contactNumber": "+256700123456",
+  "emailAddress": "seller@example.com",
+  "brand": "Apple",
+  "deliveryMethod": "Meetup or Delivery available",
+  "gpsLocation": "0.3476,32.5825"
+}
+
+### Capture post ID from response
+@postId = {{createPost.response.body.id}}
+
+###
+
+### Create Another Post - Laptop
+POST {{baseUrl}}{{apiPrefix}}/posts
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "MacBook Pro 16-inch M1 Pro",
+  "categoryId": {{categoryId}},
+  "description": "2021 MacBook Pro with M1 Pro chip, 16GB RAM, 512GB SSD. Perfect for developers and content creators.",
+  "price": 4500000,
+  "location": "Kampala",
+  "contactNumber": "+256700123456",
+  "brand": "Apple"
+}
+
+###
+
+### ============================================
+### 2. Get Post Feed (Public with optional auth)
+### ============================================
+
+GET {{baseUrl}}{{apiPrefix}}/posts/feed?page=1&limit=20
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Get Post Feed - With Category Filter
+GET {{baseUrl}}{{apiPrefix}}/posts/feed?page=1&limit=20&categoryId={{categoryId}}
+
+###
+
+### Get Post Feed - Page 2
+GET {{baseUrl}}{{apiPrefix}}/posts/feed?page=2&limit=10
+
+###
+
+### ============================================
+### 3. Search Posts (Public)
+### ============================================
+
+GET {{baseUrl}}{{apiPrefix}}/posts/search?query=iphone&page=1&limit=20
+
+###
+
+### Search Posts - With Price Range
+GET {{baseUrl}}{{apiPrefix}}/posts/search?query=phone&minPrice=1000000&maxPrice=3000000&page=1&limit=20
+
+###
+
+### Search Posts - With Location
+GET {{baseUrl}}{{apiPrefix}}/posts/search?query=laptop&location=Kampala&page=1&limit=10
+
+###
+
+### Search Posts - Advanced Filters
+GET {{baseUrl}}{{apiPrefix}}/posts/search?query=macbook&categoryId={{categoryId}}&minPrice=3000000&maxPrice=5000000&location=Kampala&page=1&limit=10
+
+###
+
+### ============================================
+### 4. Get Post by ID (Public with optional auth)
+### ============================================
+
+GET {{baseUrl}}{{apiPrefix}}/posts/{{postId}}
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Get Post by ID - Without Auth
+GET {{baseUrl}}{{apiPrefix}}/posts/{{postId}}
+
+###
+
+### ============================================
+### 5. Update Post (Owner Only)
+### ============================================
+
+PUT {{baseUrl}}{{apiPrefix}}/posts/{{postId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "iPhone 13 Pro Max - 256GB (Price Reduced!)",
+  "price": 2300000,
+  "description": "URGENT SALE! Price reduced for quick sale. iPhone 13 Pro Max in excellent condition."
+}
+
+###
+
+### Update Post - More Fields
+PUT {{baseUrl}}{{apiPrefix}}/posts/{{postId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "iPhone 13 Pro Max - 256GB (FINAL PRICE)",
+  "price": 2200000,
+  "location": "Kampala - Nakawa",
+  "deliveryMethod": "Free delivery within Kampala"
+}
+
+###
+
+### ============================================
+### 6. Schedule Post (Owner Only)
+### ============================================
+
+POST {{baseUrl}}{{apiPrefix}}/posts/{{postId}}/schedule
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "scheduledTime": "2025-12-15T10:00:00Z"
+}
+
+###
+
+### ============================================
+### 7. Publish Post Immediately (Owner Only)
+### ============================================
+
+POST {{baseUrl}}{{apiPrefix}}/posts/{{postId}}/publish
+Authorization: Bearer {{accessToken}}
+
+###
+
+### ============================================
+### 8. Like/Unlike Post (Private)
+### ============================================
+
+POST {{baseUrl}}{{apiPrefix}}/posts/{{postId}}/like
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Unlike Post (toggle)
+POST {{baseUrl}}{{apiPrefix}}/posts/{{postId}}/like
+Authorization: Bearer {{accessToken}}
+
+###
+
+### ============================================
+### 9. Get User's Posts (Public)
+### ============================================
+
+GET {{baseUrl}}{{apiPrefix}}/posts/user/{{userId}}
+
+###
+
+### ============================================
+### 10. Delete Post (Owner Only)
+### ============================================
+
+DELETE {{baseUrl}}{{apiPrefix}}/posts/{{postId}}
+Authorization: Bearer {{accessToken}}
+
+###
+
+### ============================================
+### ERROR TESTS - Expected Errors
+### ============================================
+
+### Create Post - No Authentication (401)
+POST {{baseUrl}}{{apiPrefix}}/posts
+Content-Type: application/json
+
+{
+  "title": "Test Post",
+  "categoryId": 1,
+  "description": "Test",
+  "price": 100000,
+  "location": "Kampala",
+  "contactNumber": "+256700000000"
+}
+
+###
+
+### Create Post - Missing Required Fields (400)
+POST {{baseUrl}}{{apiPrefix}}/posts
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Incomplete Post"
+}
+
+###
+
+### Create Post - Short Title (400)
+POST {{baseUrl}}{{apiPrefix}}/posts
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Hi",
+  "categoryId": 1,
+  "description": "Short title test",
+  "price": 100000,
+  "location": "Kampala",
+  "contactNumber": "+256700000000"
+}
+
+###
+
+### Create Post - Short Description (400)
+POST {{baseUrl}}{{apiPrefix}}/posts
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Test Post with Short Description",
+  "categoryId": 1,
+  "description": "Short",
+  "price": 100000,
+  "location": "Kampala",
+  "contactNumber": "+256700000000"
+}
+
+###
+
+### Create Post - Negative Price (400)
+POST {{baseUrl}}{{apiPrefix}}/posts
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Post with Negative Price",
+  "categoryId": 1,
+  "description": "Testing negative price validation",
+  "price": -100000,
+  "location": "Kampala",
+  "contactNumber": "+256700000000"
+}
+
+###
+
+### Get Non-Existent Post (404)
+GET {{baseUrl}}{{apiPrefix}}/posts/99999
+
+###
+
+### Update Post - Not Owner (403)
+PUT {{baseUrl}}{{apiPrefix}}/posts/1
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "Trying to update someone else's post"
+}
+
+###
+
+### Delete Post - Not Owner (403)
+DELETE {{baseUrl}}{{apiPrefix}}/posts/1
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Like Post - No Authentication (401)
+POST {{baseUrl}}{{apiPrefix}}/posts/{{postId}}/like
+
+###
+
+### Schedule Post - Past Date (400)
+POST {{baseUrl}}{{apiPrefix}}/posts/{{postId}}/schedule
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "scheduledTime": "2020-01-01T10:00:00Z"
+}
+
+###
+
+### Search Posts - Missing Query (400)
+GET {{baseUrl}}{{apiPrefix}}/posts/search?page=1&limit=20
+
+###

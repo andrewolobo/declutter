@@ -1,0 +1,197 @@
+### ============================================
+### Category Management Endpoints
+### Base URL: http://localhost:3000/api/v1/categories
+### ============================================
+
+@baseUrl = http://localhost:3000
+@apiPrefix = /api/v1
+
+### Replace with your actual tokens
+@accessToken = your-access-token-here
+@adminAccessToken = your-admin-access-token-here
+
+###
+
+### ============================================
+### 1. Get All Categories (Public)
+### ============================================
+
+# @name getAllCategories
+GET {{baseUrl}}{{apiPrefix}}/categories
+
+###
+
+### ============================================
+### 2. Get Category by ID (Public)
+### ============================================
+
+GET {{baseUrl}}{{apiPrefix}}/categories/1
+
+###
+
+### ============================================
+### 3. Create Category (Admin Only)
+### ============================================
+
+# @name createCategory
+POST {{baseUrl}}{{apiPrefix}}/categories
+Authorization: Bearer {{adminAccessToken}}
+Content-Type: application/json
+
+{
+  "name": "Electronics",
+  "description": "Electronic devices, gadgets, and accessories",
+  "iconUrl": "https://example.com/icons/electronics.png"
+}
+
+### Capture category ID from response
+@categoryId = {{createCategory.response.body.id}}
+
+###
+
+### Create Category - Vehicles
+POST {{baseUrl}}{{apiPrefix}}/categories
+Authorization: Bearer {{adminAccessToken}}
+Content-Type: application/json
+
+{
+  "name": "Vehicles",
+  "description": "Cars, motorcycles, and other vehicles"
+}
+
+###
+
+### Create Category - Real Estate
+POST {{baseUrl}}{{apiPrefix}}/categories
+Authorization: Bearer {{adminAccessToken}}
+Content-Type: application/json
+
+{
+  "name": "Real Estate",
+  "description": "Houses, apartments, land, and commercial properties"
+}
+
+###
+
+### Create Category - Fashion
+POST {{baseUrl}}{{apiPrefix}}/categories
+Authorization: Bearer {{adminAccessToken}}
+Content-Type: application/json
+
+{
+  "name": "Fashion & Beauty",
+  "description": "Clothing, shoes, accessories, and beauty products"
+}
+
+###
+
+### ============================================
+### 4. Update Category (Admin Only)
+### ============================================
+
+PUT {{baseUrl}}{{apiPrefix}}/categories/{{categoryId}}
+Authorization: Bearer {{adminAccessToken}}
+Content-Type: application/json
+
+{
+  "name": "Electronics & Gadgets",
+  "description": "Updated description: All electronic devices, smartphones, laptops, and accessories",
+  "iconUrl": "https://example.com/icons/electronics-updated.png"
+}
+
+###
+
+### ============================================
+### 5. Delete Category (Admin Only)
+### ============================================
+
+DELETE {{baseUrl}}{{apiPrefix}}/categories/{{categoryId}}
+Authorization: Bearer {{adminAccessToken}}
+
+###
+
+### ============================================
+### ERROR TESTS - Expected Errors
+### ============================================
+
+### Create Category - No Authentication (401)
+POST {{baseUrl}}{{apiPrefix}}/categories
+Content-Type: application/json
+
+{
+  "name": "Test Category"
+}
+
+###
+
+### Create Category - Non-Admin User (403)
+POST {{baseUrl}}{{apiPrefix}}/categories
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Test Category"
+}
+
+###
+
+### Create Category - Short Name (400)
+POST {{baseUrl}}{{apiPrefix}}/categories
+Authorization: Bearer {{adminAccessToken}}
+Content-Type: application/json
+
+{
+  "name": "A"
+}
+
+###
+
+### Create Category - Missing Name (400)
+POST {{baseUrl}}{{apiPrefix}}/categories
+Authorization: Bearer {{adminAccessToken}}
+Content-Type: application/json
+
+{
+  "description": "Category without name"
+}
+
+###
+
+### Get Non-Existent Category (404)
+GET {{baseUrl}}{{apiPrefix}}/categories/99999
+
+###
+
+### Update Category - Non-Admin (403)
+PUT {{baseUrl}}{{apiPrefix}}/categories/1
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Updated by non-admin"
+}
+
+###
+
+### Delete Category - Non-Admin (403)
+DELETE {{baseUrl}}{{apiPrefix}}/categories/1
+Authorization: Bearer {{accessToken}}
+
+###
+
+### Update Non-Existent Category (404)
+PUT {{baseUrl}}{{apiPrefix}}/categories/99999
+Authorization: Bearer {{adminAccessToken}}
+Content-Type: application/json
+
+{
+  "name": "Non-existent category"
+}
+
+###
+
+### Delete Non-Existent Category (404)
+DELETE {{baseUrl}}{{apiPrefix}}/categories/99999
+Authorization: Bearer {{adminAccessToken}}
+
+###
