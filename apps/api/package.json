@@ -1,0 +1,49 @@
+{
+  "name": "@dec_l/api",
+  "version": "1.0.0",
+  "description": "DEC_L Backend API",
+  "main": "dist/server.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:unit": "jest --testPathPattern=unit",
+    "test:integration": "jest --testPathPattern=integration --runInBand",
+    "build": "tsc",
+    "dev": "ts-node src/server.ts",
+    "dev:watch": "nodemon --watch src --exec ts-node src/server.ts",
+    "start": "node dist/server.js",
+    "clean": "rm -rf dist coverage node_modules",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jest": "^29.5.14",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^25.0.0",
+    "@types/supertest": "^6.0.2",
+    "jest": "^29.7.0",
+    "prisma": "^6.19.1",
+    "supertest": "^6.3.3",
+    "ts-jest": "^29.4.6",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^8.3.1",
+    "@prisma/client": "^6.19.1",
+    "axios": "^1.13.2",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
+    "joi": "^18.0.2",
+    "jsonwebtoken": "^9.0.3"
+  }
+}

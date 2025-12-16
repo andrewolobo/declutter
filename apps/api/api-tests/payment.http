@@ -7,7 +7,9 @@
 @apiPrefix = /api/v1
 
 ### Replace with your actual tokens and IDs
-@accessToken = your-access-token-here
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoiYW5kcmV3b2xvYm8xMEBnbWFpbC5jb20iLCJpYXQiOjE3NjU4NzE1MzQsImV4cCI6MTc2NTg3MjQzNH0.0aSwgcJn5-EyD3HfMah8bx4wafCKdlsDgwxxjwrqhtU
+@adminAccessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsImVtYWlsIjoib2xvYm9yYW1hQGdtYWlsLmNvbSIsImlhdCI6MTc2NTg3MTU1NywiZXhwIjoxNzY1ODcyNDU3fQ.izlkN9BsucNuhE2aqfvWmsMnLEds1LB0ske33yZew4w
+
 @postId = your-post-id-here
 @pricingTierId = 1
 
