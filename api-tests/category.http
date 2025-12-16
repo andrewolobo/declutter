@@ -7,8 +7,8 @@
 @apiPrefix = /api/v1
 
 ### Replace with your actual tokens
-@accessToken = your-access-token-here
-@adminAccessToken = your-admin-access-token-here
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoiYW5kcmV3b2xvYm8xMEBnbWFpbC5jb20iLCJpYXQiOjE3NjU3MDExNjEsImV4cCI6MTc2NTcwMjA2MX0.cv006wT7uHfvMIob8v5jCHTNtVEqYJ_u17Ps3m_saW8
+@adminAccessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsImVtYWlsIjoib2xvYm9yYW1hQGdtYWlsLmNvbSIsImlhdCI6MTc2NTc4NzE0NywiZXhwIjoxNzY1Nzg4MDQ3fQ.xbIpJcexwp4vTB2cKhg-zaUjhAC-fnLaGm1S8ZBNSI
 
 ###
 

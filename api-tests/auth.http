@@ -37,9 +37,9 @@ POST {{baseUrl}}{{apiPrefix}}/auth/register
 Content-Type: application/json
 
 {
-  "emailAddress": "admin@dec_l.com",
+  "emailAddress": "oloborama@gmail.com",
   "password": "AdminPassword123!",
-  "fullName": "Admin User",
+  "fullName": "Andrew - Administrator",
   "phoneNumber": "+256700999999"
 }
 
@@ -62,8 +62,8 @@ POST {{baseUrl}}{{apiPrefix}}/auth/login
 Content-Type: application/json
 
 {
-  "emailAddress": "andrewolobo10@gmail.com",
-  "password": "TestPassword123!"
+  "emailAddress": "oloborama@gmail.com",
+  "password": "AdminPassword123!"
 }
 
 ### Update tokens from login response
