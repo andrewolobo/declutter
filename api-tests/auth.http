@@ -62,10 +62,22 @@ POST {{baseUrl}}{{apiPrefix}}/auth/login
 Content-Type: application/json
 
 {
+  "emailAddress": "andrewolobo10@gmail.com",
+  "password": "TestPassword123!"
+}
+
+### ============================================
+### 2.1. Login Admin
+### ============================================
+
+# @name loginAdmin
+POST {{baseUrl}}{{apiPrefix}}/auth/login
+Content-Type: application/json
+
+{
   "emailAddress": "oloborama@gmail.com",
   "password": "AdminPassword123!"
 }
-
 ### Update tokens from login response
 @accessToken = {{login.response.body.data.tokens.accessToken}}
 @refreshToken = {{login.response.body.data.tokens.refreshToken}}
