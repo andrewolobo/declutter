@@ -1,0 +1,186 @@
+<script lang="ts">
+	/**
+	 * Sidebar Component
+	 * Left navigation menu with main app sections
+	 * Supports collapse/expand and active state highlighting
+	 */
+	
+	import Icon from '$lib/components/ui/Icon.svelte';
+	
+	interface Props {
+		/** Current active route */
+		activeRoute: string;
+		/** Collapsed state */
+		collapsed?: boolean;
+		/** Navigation callback */
+		onNavigate?: (route: string) => void;
+	}
+	
+	let {
+		activeRoute,
+		collapsed = false,
+		onNavigate
+	}: Props = $props();
+	
+	// Navigation items
+	const navItems = [
+		{ icon: 'home', label: 'Home', route: '/' },
+		{ icon: 'chat', label: 'Messages', route: '/messages', badge: 5 },
+		{ icon: 'person', label: 'Profile', route: '/profile' },
+		{ icon: 'analytics', label: 'Post Analytics', route: '/analytics' }
+	];
+	
+	const adminItems = [
+		{ icon: 'admin_panel_settings', label: 'Admin Dashboard', route: '/admin' },
+		{ icon: 'category', label: 'Categories', route: '/admin/categories' },
+		{ icon: 'report', label: 'Reports', route: '/admin/reports', badge: 12 }
+	];
+	
+	// TODO: Check user role for admin section
+	const isAdmin = true;
+	
+	function handleNavigation(route: string) {
+		if (onNavigate) {
+			onNavigate(route);
+		}
+	}
+	
+	function isActive(route: string): boolean {
+		if (route === '/') {
+			return activeRoute === '/';
+		}
+		return activeRoute.startsWith(route);
+	}
+</script>
+
+<aside 
+	class="h-full bg-white dark:bg-background-dark border-r border-gray-200 dark:border-gray-700 transition-all duration-300 flex flex-col"
+	class:w-64={!collapsed}
+	class:w-16={collapsed}
+>
+	<!-- Navigation Items -->
+	<nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+		{#each navItems as item}
+			<a
+				href={item.route}
+				onclick={() => handleNavigation(item.route)}
+				class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors relative group"
+				class:bg-primary={isActive(item.route)}
+				class:text-white={isActive(item.route)}
+				class:text-gray-700={!isActive(item.route)}
+				class:dark:text-gray-300={!isActive(item.route)}
+				class:hover:bg-gray-100={!isActive(item.route)}
+				class:dark:hover:bg-gray-800={!isActive(item.route)}
+				aria-label={item.label}
+			>
+				<Icon 
+					name={item.icon} 
+					size={24}
+					class={isActive(item.route) ? 'text-white' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'}
+				/>
+				
+				{#if !collapsed}
+					<span class="flex-1 font-medium">
+						{item.label}
+					</span>
+					
+					{#if item.badge}
+						<span class="px-2 py-0.5 text-xs font-bold rounded-full"
+							class:bg-white={isActive(item.route)}
+							class:text-primary={isActive(item.route)}
+							class:bg-primary={!isActive(item.route)}
+							class:text-white={!isActive(item.route)}
+						>
+							{item.badge}
+						</span>
+					{/if}
+				{:else if item.badge}
+					<span class="absolute -top-1 -right-1 w-5 h-5 bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center">
+						{item.badge > 9 ? '9+' : item.badge}
+					</span>
+				{/if}
+			</a>
+		{/each}
+		
+		<!-- Admin Section -->
+		{#if isAdmin}
+			<div class="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
+				{#if !collapsed}
+					<p class="px-3 mb-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+						Admin
+					</p>
+				{/if}
+				
+				{#each adminItems as item}
+					<a
+						href={item.route}
+						onclick={() => handleNavigation(item.route)}
+						class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors relative group"
+						class:bg-primary={isActive(item.route)}
+						class:text-white={isActive(item.route)}
+						class:text-gray-700={!isActive(item.route)}
+						class:dark:text-gray-300={!isActive(item.route)}
+						class:hover:bg-gray-100={!isActive(item.route)}
+						class:dark:hover:bg-gray-800={!isActive(item.route)}
+						aria-label={item.label}
+					>
+						<Icon 
+							name={item.icon} 
+							size={24}
+							class={isActive(item.route) ? 'text-white' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'}
+						/>
+						
+						{#if !collapsed}
+							<span class="flex-1 font-medium text-sm">
+								{item.label}
+							</span>
+							
+							{#if item.badge}
+								<span class="px-2 py-0.5 text-xs font-bold rounded-full bg-danger-500 text-white">
+									{item.badge}
+								</span>
+							{/if}
+						{:else if item.badge}
+							<span class="absolute -top-1 -right-1 w-5 h-5 bg-danger-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+								{item.badge > 9 ? '9+' : item.badge}
+							</span>
+						{/if}
+					</a>
+				{/each}
+			</div>
+		{/if}
+	</nav>
+	
+	<!-- Bottom Actions -->
+	<div class="p-3 border-t border-gray-200 dark:border-gray-700">
+		<button
+			class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+			aria-label="Settings"
+		>
+			<Icon name="settings" size={24} class="text-gray-500 dark:text-gray-400" />
+			{#if !collapsed}
+				<span class="font-medium">Settings</span>
+			{/if}
+		</button>
+	</div>
+</aside>
+
+<style>
+	/* Custom scrollbar for sidebar */
+	nav::-webkit-scrollbar {
+		width: 6px;
+	}
+	
+	nav::-webkit-scrollbar-track {
+		background: transparent;
+	}
+	
+	nav::-webkit-scrollbar-thumb {
+		background: rgba(156, 163, 175, 0.3);
+		border-radius: 3px;
+	}
+	
+	nav::-webkit-scrollbar-thumb:hover {
+		background: rgba(156, 163, 175, 0.5);
+	}
+</style>
