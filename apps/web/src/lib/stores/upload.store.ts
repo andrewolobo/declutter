@@ -1,14 +1,14 @@
 /**
  * Upload Store
- * 
+ *
  * Manages file upload state, progress tracking, and upload history.
- * 
+ *
  * STATUS: STUB IMPLEMENTATION
  * This is a placeholder store that will be fully implemented later.
  * The upload service is already complete, but advanced state management
  * features like progress tracking, retry logic, and upload history will
  * be added when needed.
- * 
+ *
  * @module stores/upload
  */
 
@@ -59,7 +59,7 @@ function createUploadStore() {
 
 		/**
 		 * Start a new upload
-		 * 
+		 *
 		 * @example
 		 * ```typescript
 		 * uploadStore.startUpload('upload_123', file);
@@ -86,7 +86,7 @@ function createUploadStore() {
 
 		/**
 		 * Update upload progress
-		 * 
+		 *
 		 * @example
 		 * ```typescript
 		 * uploadStore.updateProgress('upload_123', 45);
@@ -112,7 +112,7 @@ function createUploadStore() {
 
 		/**
 		 * Complete an upload
-		 * 
+		 *
 		 * @example
 		 * ```typescript
 		 * uploadStore.completeUpload('upload_123', result);
@@ -143,7 +143,7 @@ function createUploadStore() {
 
 		/**
 		 * Mark an upload as failed
-		 * 
+		 *
 		 * @example
 		 * ```typescript
 		 * uploadStore.failUpload('upload_123', 'Network error');
@@ -173,7 +173,7 @@ function createUploadStore() {
 
 		/**
 		 * Cancel an in-progress upload
-		 * 
+		 *
 		 * @example
 		 * ```typescript
 		 * uploadStore.cancelUpload('upload_123');
@@ -201,7 +201,7 @@ function createUploadStore() {
 
 		/**
 		 * Remove an upload from the store
-		 * 
+		 *
 		 * @example
 		 * ```typescript
 		 * uploadStore.removeUpload('upload_123');
@@ -211,7 +211,7 @@ function createUploadStore() {
 			update((state) => {
 				const newUploads = new Map(state.uploads);
 				const upload = newUploads.get(id);
-				
+
 				if (upload && upload.status === 'uploading') {
 					// Don't remove active uploads
 					return state;
@@ -228,7 +228,7 @@ function createUploadStore() {
 
 		/**
 		 * Clear completed uploads
-		 * 
+		 *
 		 * @example
 		 * ```typescript
 		 * uploadStore.clearCompleted();
@@ -237,7 +237,7 @@ function createUploadStore() {
 		clearCompleted(): void {
 			update((state) => {
 				const newUploads = new Map(state.uploads);
-				
+
 				for (const [id, upload] of newUploads.entries()) {
 					if (upload.status === 'completed') {
 						newUploads.delete(id);
@@ -253,7 +253,7 @@ function createUploadStore() {
 
 		/**
 		 * Clear all uploads (except active ones)
-		 * 
+		 *
 		 * @example
 		 * ```typescript
 		 * uploadStore.clearAll();
@@ -262,7 +262,7 @@ function createUploadStore() {
 		clearAll(): void {
 			update((state) => {
 				const newUploads = new Map(state.uploads);
-				
+
 				for (const [id, upload] of newUploads.entries()) {
 					if (upload.status !== 'uploading') {
 						newUploads.delete(id);
@@ -300,33 +300,29 @@ export const uploadStore = createUploadStore();
 /**
  * All uploads as an array
  */
-export const uploads: Readable<UploadItem[]> = derived(
-	uploadStore,
-	($store) => Array.from($store.uploads.values())
+export const uploads: Readable<UploadItem[]> = derived(uploadStore, ($store) =>
+	Array.from($store.uploads.values())
 );
 
 /**
  * Active uploads (currently uploading)
  */
-export const activeUploads: Readable<UploadItem[]> = derived(
-	uploads,
-	($uploads) => $uploads.filter((u) => u.status === 'uploading')
+export const activeUploads: Readable<UploadItem[]> = derived(uploads, ($uploads) =>
+	$uploads.filter((u) => u.status === 'uploading')
 );
 
 /**
  * Completed uploads
  */
-export const completedUploads: Readable<UploadItem[]> = derived(
-	uploads,
-	($uploads) => $uploads.filter((u) => u.status === 'completed')
+export const completedUploads: Readable<UploadItem[]> = derived(uploads, ($uploads) =>
+	$uploads.filter((u) => u.status === 'completed')
 );
 
 /**
  * Failed uploads
  */
-export const failedUploads: Readable<UploadItem[]> = derived(
-	uploads,
-	($uploads) => $uploads.filter((u) => u.status === 'failed')
+export const failedUploads: Readable<UploadItem[]> = derived(uploads, ($uploads) =>
+	$uploads.filter((u) => u.status === 'failed')
 );
 
 /**
@@ -348,15 +344,12 @@ export const activeUploadCount: Readable<number> = derived(
 /**
  * Overall upload progress (0-100)
  */
-export const overallProgress: Readable<number> = derived(
-	activeUploads,
-	($activeUploads) => {
-		if ($activeUploads.length === 0) return 0;
-		
-		const totalProgress = $activeUploads.reduce((sum, upload) => sum + upload.progress, 0);
-		return Math.round(totalProgress / $activeUploads.length);
-	}
-);
+export const overallProgress: Readable<number> = derived(activeUploads, ($activeUploads) => {
+	if ($activeUploads.length === 0) return 0;
+
+	const totalProgress = $activeUploads.reduce((sum, upload) => sum + upload.progress, 0);
+	return Math.round(totalProgress / $activeUploads.length);
+});
 
 /**
  * Upload statistics
@@ -366,15 +359,12 @@ export const uploadStats: Readable<{
 	active: number;
 	completed: number;
 	failed: number;
-}> = derived(
-	uploadStore,
-	($store) => ({
-		total: $store.uploads.size,
-		active: $store.activeUploadCount,
-		completed: $store.totalUploaded,
-		failed: $store.totalFailed
-	})
-);
+}> = derived(uploadStore, ($store) => ({
+	total: $store.uploads.size,
+	active: $store.activeUploadCount,
+	completed: $store.totalUploaded,
+	failed: $store.totalFailed
+}));
 
 // ============================================================================
 // Helper Functions

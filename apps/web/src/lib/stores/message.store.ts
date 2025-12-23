@@ -492,13 +492,9 @@ export const getMessage = derived(
 /**
  * Check if message exists
  */
-export const hasMessage = derived(
-	messageStore,
-	($store) =>
-		(messageId: number): boolean => {
-			return $store.messages.has(messageId);
-		}
-);
+export const hasMessage = derived(messageStore, ($store) => (messageId: number): boolean => {
+	return $store.messages.has(messageId);
+});
 
 /**
  * Get messages for a specific conversation (by user ID)
@@ -540,13 +536,9 @@ export const getConversation = derived(
 /**
  * Check if conversation exists
  */
-export const hasConversation = derived(
-	messageStore,
-	($store) =>
-		(userId: number): boolean => {
-			return $store.conversations.has(userId);
-		}
-);
+export const hasConversation = derived(messageStore, ($store) => (userId: number): boolean => {
+	return $store.conversations.has(userId);
+});
 
 /**
  * Get unread count for a specific conversation

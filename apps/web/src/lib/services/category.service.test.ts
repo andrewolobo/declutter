@@ -1,6 +1,6 @@
 /**
  * Category Service Tests
- * 
+ *
  * Comprehensive test suite for category service functionality.
  */
 
@@ -8,7 +8,11 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { apiClient } from './api.client';
 import { categoryStore } from '$lib/stores/category.store';
 import * as categoryService from './category.service';
-import type { CategoryResponseDTO, CreateCategoryDTO, UpdateCategoryDTO } from '$lib/types/category.types';
+import type {
+	CategoryResponseDTO,
+	CreateCategoryDTO,
+	UpdateCategoryDTO
+} from '$lib/types/category.types';
 
 // Mock API client
 vi.mock('./api.client', () => ({

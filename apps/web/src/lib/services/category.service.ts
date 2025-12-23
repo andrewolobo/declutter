@@ -1,9 +1,9 @@
 /**
  * Category Service
- * 
+ *
  * Handles all category-related operations including fetching categories,
  * category hierarchy, and category statistics.
- * 
+ *
  * @module services/category
  */
 
@@ -11,7 +11,11 @@ import { apiClient } from './api.client';
 import { categoryStore } from '$lib/stores/category.store';
 import { handleApiError } from '$lib/utils/error-handler';
 import type { ApiResponse } from '$lib/types/api.types';
-import type { CategoryResponseDTO, CreateCategoryDTO, UpdateCategoryDTO } from '$lib/types/category.types';
+import type {
+	CategoryResponseDTO,
+	CreateCategoryDTO,
+	UpdateCategoryDTO
+} from '$lib/types/category.types';
 
 // ============================================================================
 // Category Fetching
@@ -19,10 +23,10 @@ import type { CategoryResponseDTO, CreateCategoryDTO, UpdateCategoryDTO } from '
 
 /**
  * Get all categories
- * 
+ *
  * @param forceRefresh - Force fetch from API instead of using cache
  * @returns Promise resolving to array of categories
- * 
+ *
  * @example
  * ```typescript
  * const categories = await getCategories();
@@ -53,11 +57,11 @@ export async function getCategories(forceRefresh = false): Promise<CategoryRespo
 
 /**
  * Get a single category by ID
- * 
+ *
  * @param categoryId - The category ID
  * @param forceRefresh - Force fetch from API instead of using cache
  * @returns Promise resolving to category data
- * 
+ *
  * @example
  * ```typescript
  * const category = await getCategory(1);
@@ -93,28 +97,24 @@ export async function getCategory(
 
 /**
  * Get categories with their post counts
- * 
+ *
  * @param forceRefresh - Force fetch from API instead of using cache
  * @returns Promise resolving to categories with statistics
- * 
+ *
  * @example
  * ```typescript
  * const stats = await getCategoriesWithStats();
  * stats.forEach(cat => console.log(`${cat.name}: ${cat.postCount} posts`));
  * ```
  */
-export async function getCategoriesWithStats(
-	forceRefresh = false
-): Promise<CategoryResponseDTO[]> {
+export async function getCategoriesWithStats(forceRefresh = false): Promise<CategoryResponseDTO[]> {
 	try {
 		// Check cache first unless force refresh
 		if (!forceRefresh && categoryStore.hasCategories()) {
 			return categoryStore.getAllCategories();
 		}
 
-		const response = await apiClient.get<ApiResponse<CategoryResponseDTO[]>>(
-			'/categories/stats'
-		);
+		const response = await apiClient.get<ApiResponse<CategoryResponseDTO[]>>('/categories/stats');
 
 		if (response.data.success && response.data.data) {
 			categoryStore.setCategories(response.data.data);
@@ -129,10 +129,10 @@ export async function getCategoriesWithStats(
 
 /**
  * Get popular categories (sorted by post count)
- * 
+ *
  * @param limit - Maximum number of categories to return
  * @returns Promise resolving to popular categories
- * 
+ *
  * @example
  * ```typescript
  * const popular = await getPopularCategories(5);
@@ -162,10 +162,10 @@ export async function getPopularCategories(limit = 10): Promise<CategoryResponse
 
 /**
  * Create a new category (admin only)
- * 
+ *
  * @param data - Category creation data
  * @returns Promise resolving to created category
- * 
+ *
  * @example
  * ```typescript
  * const category = await createCategory({
@@ -177,10 +177,7 @@ export async function getPopularCategories(limit = 10): Promise<CategoryResponse
  */
 export async function createCategory(data: CreateCategoryDTO): Promise<CategoryResponseDTO> {
 	try {
-		const response = await apiClient.post<ApiResponse<CategoryResponseDTO>>(
-			'/categories',
-			data
-		);
+		const response = await apiClient.post<ApiResponse<CategoryResponseDTO>>('/categories', data);
 
 		if (response.data.success && response.data.data) {
 			// Add to store
@@ -196,11 +193,11 @@ export async function createCategory(data: CreateCategoryDTO): Promise<CategoryR
 
 /**
  * Update a category (admin only)
- * 
+ *
  * @param categoryId - The category ID
  * @param data - Category update data
  * @returns Promise resolving to updated category
- * 
+ *
  * @example
  * ```typescript
  * const updated = await updateCategory(1, {
@@ -232,10 +229,10 @@ export async function updateCategory(
 
 /**
  * Delete a category (admin only)
- * 
+ *
  * @param categoryId - The category ID
  * @returns Promise resolving when deletion is complete
- * 
+ *
  * @example
  * ```typescript
  * await deleteCategory(1);
@@ -244,9 +241,7 @@ export async function updateCategory(
  */
 export async function deleteCategory(categoryId: number): Promise<void> {
 	try {
-		const response = await apiClient.delete<ApiResponse<void>>(
-			`/categories/${categoryId}`
-		);
+		const response = await apiClient.delete<ApiResponse<void>>(`/categories/${categoryId}`);
 
 		if (response.data.success) {
 			// Remove from store
@@ -259,10 +254,10 @@ export async function deleteCategory(categoryId: number): Promise<void> {
 
 /**
  * Reorder categories (admin only)
- * 
+ *
  * @param categoryIds - Array of category IDs in desired order
  * @returns Promise resolving when reordering is complete
- * 
+ *
  * @example
  * ```typescript
  * await reorderCategories([3, 1, 2, 4]);
@@ -271,10 +266,9 @@ export async function deleteCategory(categoryId: number): Promise<void> {
  */
 export async function reorderCategories(categoryIds: number[]): Promise<void> {
 	try {
-		const response = await apiClient.post<ApiResponse<void>>(
-			'/categories/reorder',
-			{ categoryIds }
-		);
+		const response = await apiClient.post<ApiResponse<void>>('/categories/reorder', {
+			categoryIds
+		});
 
 		if (response.data.success) {
 			// Refresh categories to get new order
@@ -291,10 +285,10 @@ export async function reorderCategories(categoryIds: number[]): Promise<void> {
 
 /**
  * Search categories by name
- * 
+ *
  * @param query - Search query string
  * @returns Promise resolving to matching categories
- * 
+ *
  * @example
  * ```typescript
  * const results = await searchCategories('elect');
@@ -307,10 +301,9 @@ export async function searchCategories(query: string): Promise<CategoryResponseD
 			return [];
 		}
 
-		const response = await apiClient.get<ApiResponse<CategoryResponseDTO[]>>(
-			'/categories/search',
-			{ params: { q: query } }
-		);
+		const response = await apiClient.get<ApiResponse<CategoryResponseDTO[]>>('/categories/search', {
+			params: { q: query }
+		});
 
 		if (response.data.success && response.data.data) {
 			return response.data.data;
@@ -324,10 +317,10 @@ export async function searchCategories(query: string): Promise<CategoryResponseD
 
 /**
  * Get categories by IDs
- * 
+ *
  * @param categoryIds - Array of category IDs
  * @returns Promise resolving to categories
- * 
+ *
  * @example
  * ```typescript
  * const categories = await getCategoriesByIds([1, 3, 5]);
@@ -341,7 +334,7 @@ export async function getCategoriesByIds(categoryIds: number[]): Promise<Categor
 
 		// Try to get from cache first
 		const cached = categoryIds
-			.map(id => categoryStore.getCategory(id))
+			.map((id) => categoryStore.getCategory(id))
 			.filter((cat): cat is CategoryResponseDTO => cat !== null);
 
 		if (cached.length === categoryIds.length) {
@@ -349,14 +342,13 @@ export async function getCategoriesByIds(categoryIds: number[]): Promise<Categor
 		}
 
 		// Fetch missing ones
-		const response = await apiClient.post<ApiResponse<CategoryResponseDTO[]>>(
-			'/categories/batch',
-			{ categoryIds }
-		);
+		const response = await apiClient.post<ApiResponse<CategoryResponseDTO[]>>('/categories/batch', {
+			categoryIds
+		});
 
 		if (response.data.success && response.data.data) {
 			// Update store
-			response.data.data.forEach(cat => categoryStore.updateCategory(cat));
+			response.data.data.forEach((cat) => categoryStore.updateCategory(cat));
 			return response.data.data;
 		}
 
@@ -372,7 +364,7 @@ export async function getCategoriesByIds(categoryIds: number[]): Promise<Categor
 
 /**
  * Refresh categories cache
- * 
+ *
  * @example
  * ```typescript
  * await refreshCategories();
@@ -385,7 +377,7 @@ export async function refreshCategories(): Promise<void> {
 
 /**
  * Clear categories cache
- * 
+ *
  * @example
  * ```typescript
  * clearCategoriesCache();
@@ -397,7 +389,7 @@ export function clearCategoriesCache(): void {
 
 /**
  * Check if categories are loaded in cache
- * 
+ *
  * @returns True if categories are cached
  */
 export function hasCachedCategories(): boolean {
@@ -410,10 +402,10 @@ export function hasCachedCategories(): boolean {
 
 /**
  * Get category name by ID
- * 
+ *
  * @param categoryId - The category ID
  * @returns Category name or null if not found
- * 
+ *
  * @example
  * ```typescript
  * const name = getCategoryName(1);
@@ -427,7 +419,7 @@ export function getCategoryName(categoryId: number): string | null {
 
 /**
  * Get category icon URL by ID
- * 
+ *
  * @param categoryId - The category ID
  * @returns Category icon URL or null if not found
  */
@@ -438,7 +430,7 @@ export function getCategoryIcon(categoryId: number): string | null {
 
 /**
  * Get total post count across all categories
- * 
+ *
  * @returns Total post count
  */
 export function getTotalPostCount(): number {
@@ -448,7 +440,7 @@ export function getTotalPostCount(): number {
 
 /**
  * Sort categories by name
- * 
+ *
  * @param categories - Array of categories to sort
  * @param ascending - Sort order (default: true)
  * @returns Sorted categories
@@ -465,7 +457,7 @@ export function sortCategoriesByName(
 
 /**
  * Sort categories by post count
- * 
+ *
  * @param categories - Array of categories to sort
  * @param ascending - Sort order (default: false for most popular first)
  * @returns Sorted categories
@@ -482,7 +474,7 @@ export function sortCategoriesByPostCount(
 
 /**
  * Filter categories with minimum post count
- * 
+ *
  * @param categories - Array of categories to filter
  * @param minPosts - Minimum post count
  * @returns Filtered categories
@@ -491,7 +483,7 @@ export function filterCategoriesByMinPosts(
 	categories: CategoryResponseDTO[],
 	minPosts: number
 ): CategoryResponseDTO[] {
-	return categories.filter(cat => cat.postCount >= minPosts);
+	return categories.filter((cat) => cat.postCount >= minPosts);
 }
 
 // ============================================================================

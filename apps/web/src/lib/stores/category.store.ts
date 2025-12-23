@@ -1,8 +1,8 @@
 /**
  * Category Store
- * 
+ *
  * Manages category state, caching, and derived data.
- * 
+ *
  * @module stores/category
  */
 
@@ -42,7 +42,7 @@ function createCategoryStore() {
 
 		/**
 		 * Set loading state
-		 * 
+		 *
 		 * @example
 		 * ```typescript
 		 * categoryStore.setLoading(true);
@@ -54,7 +54,7 @@ function createCategoryStore() {
 
 		/**
 		 * Set error state
-		 * 
+		 *
 		 * @example
 		 * ```typescript
 		 * categoryStore.setError('Failed to fetch categories');
@@ -66,9 +66,9 @@ function createCategoryStore() {
 
 		/**
 		 * Set all categories
-		 * 
+		 *
 		 * @param categories - Array of categories to store
-		 * 
+		 *
 		 * @example
 		 * ```typescript
 		 * categoryStore.setCategories(categories);
@@ -93,9 +93,9 @@ function createCategoryStore() {
 
 		/**
 		 * Add a new category
-		 * 
+		 *
 		 * @param category - Category to add
-		 * 
+		 *
 		 * @example
 		 * ```typescript
 		 * categoryStore.addCategory(newCategory);
@@ -115,9 +115,9 @@ function createCategoryStore() {
 
 		/**
 		 * Update an existing category
-		 * 
+		 *
 		 * @param category - Category with updated data
-		 * 
+		 *
 		 * @example
 		 * ```typescript
 		 * categoryStore.updateCategory(updatedCategory);
@@ -148,9 +148,9 @@ function createCategoryStore() {
 
 		/**
 		 * Remove a category
-		 * 
+		 *
 		 * @param categoryId - ID of category to remove
-		 * 
+		 *
 		 * @example
 		 * ```typescript
 		 * categoryStore.removeCategory(1);
@@ -170,10 +170,10 @@ function createCategoryStore() {
 
 		/**
 		 * Update category post count
-		 * 
+		 *
 		 * @param categoryId - Category ID
 		 * @param postCount - New post count
-		 * 
+		 *
 		 * @example
 		 * ```typescript
 		 * categoryStore.updatePostCount(1, 42);
@@ -199,10 +199,10 @@ function createCategoryStore() {
 
 		/**
 		 * Increment category post count
-		 * 
+		 *
 		 * @param categoryId - Category ID
 		 * @param amount - Amount to increment (default: 1)
-		 * 
+		 *
 		 * @example
 		 * ```typescript
 		 * categoryStore.incrementPostCount(1); // +1
@@ -229,10 +229,10 @@ function createCategoryStore() {
 
 		/**
 		 * Decrement category post count
-		 * 
+		 *
 		 * @param categoryId - Category ID
 		 * @param amount - Amount to decrement (default: 1)
-		 * 
+		 *
 		 * @example
 		 * ```typescript
 		 * categoryStore.decrementPostCount(1); // -1
@@ -259,7 +259,7 @@ function createCategoryStore() {
 
 		/**
 		 * Clear all categories
-		 * 
+		 *
 		 * @example
 		 * ```typescript
 		 * categoryStore.clearCategories();
@@ -286,7 +286,7 @@ function createCategoryStore() {
 
 		/**
 		 * Get a category by ID
-		 * 
+		 *
 		 * @param categoryId - Category ID
 		 * @returns Category or null if not found
 		 */
@@ -300,7 +300,7 @@ function createCategoryStore() {
 
 		/**
 		 * Get all categories as array
-		 * 
+		 *
 		 * @returns Array of all categories
 		 */
 		getAllCategories(): CategoryResponseDTO[] {
@@ -313,7 +313,7 @@ function createCategoryStore() {
 
 		/**
 		 * Check if a category exists
-		 * 
+		 *
 		 * @param categoryId - Category ID
 		 * @returns True if category exists
 		 */
@@ -327,7 +327,7 @@ function createCategoryStore() {
 
 		/**
 		 * Check if any categories are loaded
-		 * 
+		 *
 		 * @returns True if categories exist
 		 */
 		hasCategories(): boolean {
@@ -340,7 +340,7 @@ function createCategoryStore() {
 
 		/**
 		 * Get category count
-		 * 
+		 *
 		 * @returns Number of categories
 		 */
 		getCategoryCount(): number {
@@ -366,9 +366,8 @@ export const categoryStore = createCategoryStore();
 /**
  * All categories as an array
  */
-export const categories: Readable<CategoryResponseDTO[]> = derived(
-	categoryStore,
-	($store) => Array.from($store.categories.values())
+export const categories: Readable<CategoryResponseDTO[]> = derived(categoryStore, ($store) =>
+	Array.from($store.categories.values())
 );
 
 /**
@@ -410,9 +409,8 @@ export const categoriesWithPosts: Readable<CategoryResponseDTO[]> = derived(
 /**
  * Empty categories (post count = 0)
  */
-export const emptyCategories: Readable<CategoryResponseDTO[]> = derived(
-	categories,
-	($categories) => $categories.filter((cat) => cat.postCount === 0)
+export const emptyCategories: Readable<CategoryResponseDTO[]> = derived(categories, ($categories) =>
+	$categories.filter((cat) => cat.postCount === 0)
 );
 
 /**
@@ -450,9 +448,8 @@ export const categoryCount: Readable<number> = derived(
 /**
  * Total posts across all categories
  */
-export const totalCategoryPosts: Readable<number> = derived(
-	categories,
-	($categories) => $categories.reduce((sum, cat) => sum + cat.postCount, 0)
+export const totalCategoryPosts: Readable<number> = derived(categories, ($categories) =>
+	$categories.reduce((sum, cat) => sum + cat.postCount, 0)
 );
 
 /**
@@ -471,9 +468,8 @@ export const categoryStats: Readable<{
 		withPosts: $withPosts.length,
 		empty: $empty.length,
 		totalPosts: $totalPosts,
-		averagePostsPerCategory: $categories.length > 0 
-			? Math.round($totalPosts / $categories.length) 
-			: 0
+		averagePostsPerCategory:
+			$categories.length > 0 ? Math.round($totalPosts / $categories.length) : 0
 	})
 );
 
@@ -492,10 +488,10 @@ export const categoriesNeedRefresh: Readable<boolean> = derived(
 	categoriesLastFetched,
 	($lastFetched) => {
 		if (!$lastFetched) return true;
-		
+
 		const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
 		const lastFetchTime = new Date($lastFetched).getTime();
-		
+
 		return lastFetchTime < fiveMinutesAgo;
 	}
 );
@@ -506,7 +502,7 @@ export const categoriesNeedRefresh: Readable<boolean> = derived(
 
 /**
  * Get category by ID (convenience function)
- * 
+ *
  * @param categoryId - Category ID
  * @returns Category or null
  */
@@ -516,7 +512,7 @@ export function getCategory(categoryId: number): CategoryResponseDTO | null {
 
 /**
  * Get category name by ID
- * 
+ *
  * @param categoryId - Category ID
  * @returns Category name or null
  */
@@ -527,7 +523,7 @@ export function getCategoryName(categoryId: number): string | null {
 
 /**
  * Get category icon by ID
- * 
+ *
  * @param categoryId - Category ID
  * @returns Category icon URL or null
  */
@@ -538,7 +534,7 @@ export function getCategoryIcon(categoryId: number): string | null {
 
 /**
  * Check if category exists
- * 
+ *
  * @param categoryId - Category ID
  * @returns True if category exists
  */
@@ -548,31 +544,32 @@ export function hasCategory(categoryId: number): boolean {
 
 /**
  * Search categories by name (local search)
- * 
+ *
  * @param query - Search query
  * @returns Matching categories
  */
 export function searchCategoriesLocal(query: string): CategoryResponseDTO[] {
 	const allCategories = categoryStore.getAllCategories();
 	const lowerQuery = query.toLowerCase().trim();
-	
+
 	if (!lowerQuery) return allCategories;
-	
-	return allCategories.filter((cat) =>
-		cat.name.toLowerCase().includes(lowerQuery) ||
-		cat.description?.toLowerCase().includes(lowerQuery)
+
+	return allCategories.filter(
+		(cat) =>
+			cat.name.toLowerCase().includes(lowerQuery) ||
+			cat.description?.toLowerCase().includes(lowerQuery)
 	);
 }
 
 /**
  * Get categories by IDs (local lookup)
- * 
+ *
  * @param categoryIds - Array of category IDs
  * @returns Array of categories
  */
 export function getCategoriesByIds(categoryIds: number[]): CategoryResponseDTO[] {
 	return categoryIds
-		.map(id => categoryStore.getCategory(id))
+		.map((id) => categoryStore.getCategory(id))
 		.filter((cat): cat is CategoryResponseDTO => cat !== null);
 }
 
