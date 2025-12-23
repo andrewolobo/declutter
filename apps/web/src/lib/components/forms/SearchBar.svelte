@@ -9,12 +9,18 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { BaseInputProps } from './types';
 
+	export let label: string | undefined = undefined;
+	export let error: string | undefined = undefined;
 	export let placeholder: string = 'Search...';
 	export let value: string = '';
+	export let category: string = '';
 	export let filters: SearchFilter[] = [];
 	export let suggestions: string[] = [];
 	export let loading: boolean = false;
+	export let required: boolean = false;
+	export let disabled: boolean = false;
 
 	const dispatch = createEventDispatcher();
 

@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { BaseFormProps } from './types';
 
-	export let label: string = '';
+	export let label: string | undefined = undefined;
 	export let checked: boolean = false;
 	export let disabled: boolean = false;
 	export let error: string | undefined = undefined;
+	export let required: boolean = false;
 	export let indeterminate: boolean = false;
 
 	const dispatch = createEventDispatcher();
@@ -52,6 +54,7 @@
 			type="checkbox"
 			{checked}
 			{disabled}
+			{required}
 			on:change={handleChange}
 			class="hidden-input"
 			aria-hidden="true"

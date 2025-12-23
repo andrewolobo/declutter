@@ -8,12 +8,15 @@
 
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
+	import type { BaseFormProps } from './types';
 
 	export let name: string;
 	export let options: RadioOption[] = [];
 	export let value: string = '';
 	export let label: string | undefined = undefined;
+	export let error: string | undefined = undefined;
 	export let disabled: boolean = false;
+	export let required: boolean = false;
 	export let layout: 'vertical' | 'horizontal' = 'vertical';
 
 	const dispatch = createEventDispatcher();

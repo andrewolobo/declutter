@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { BaseFormProps } from './types';
 
 	export let value: Date | null = null;
 	export let minDate: Date | undefined = undefined;
 	export let maxDate: Date | undefined = undefined;
 	export let label: string | undefined = undefined;
 	export let error: string | undefined = undefined;
+	export let disabled: boolean = false;
+	export let required: boolean = false;
 	export let showTime: boolean = false;
 
 	const dispatch = createEventDispatcher();
@@ -34,7 +37,9 @@
 	const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 	function togglePicker() {
-		isOpen = !isOpen;
+		if (!disabled) {
+			isOpen = !isOpen;
+		}
 	}
 
 	function handleClickOutside(event: MouseEvent) {

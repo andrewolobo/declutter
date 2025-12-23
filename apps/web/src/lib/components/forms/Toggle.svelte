@@ -1,9 +1,12 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
+	import type { BaseFormProps } from './types';
 
 	export let label: string | undefined = undefined;
+	export let error: string | undefined = undefined;
 	export let checked: boolean = false;
 	export let disabled: boolean = false;
+	export let required: boolean = false;
 	export let size: 'sm' | 'md' | 'lg' = 'md';
 
 	const dispatch = createEventDispatcher();

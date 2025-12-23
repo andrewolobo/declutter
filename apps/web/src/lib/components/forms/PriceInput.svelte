@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { BaseInputProps } from './types';
 
 	export let value: number = 0;
 	export let currency: string = 'UGX';
@@ -8,6 +9,8 @@
 	export let max: number | undefined = undefined;
 	export let label: string | undefined = undefined;
 	export let error: string | undefined = undefined;
+	export let disabled: boolean = false;
+	export let required: boolean = false;
 	export let placeholder: string = '0';
 
 	const dispatch = createEventDispatcher();

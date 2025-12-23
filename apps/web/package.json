@@ -14,13 +14,25 @@
         "test": "vitest",
         "test:ui": "vitest --ui",
         "test:run": "vitest run",
-        "test:coverage": "vitest run --coverage"
+        "test:coverage": "vitest run --coverage",
+        "storybook": "storybook dev -p 6006 --no-open",
+        "build-storybook": "storybook build"
     },
     "devDependencies": {
+        "@axe-core/react": "^4.11.0",
         "@faker-js/faker": "^8.3.1",
+        "@storybook/addon-a11y": "^8.4.7",
+        "@storybook/addon-essentials": "^8.4.7",
+        "@storybook/addon-interactions": "^8.4.7",
+        "@storybook/addon-links": "^8.4.7",
+        "@storybook/addon-svelte-csf": "^5.0.5",
+        "@storybook/addon-themes": "^8.4.7",
+        "@storybook/svelte-vite": "^8.4.7",
+        "@storybook/test": "^8.6.14",
         "@sveltejs/adapter-node": "^5.0.1",
         "@sveltejs/kit": "^2.5.0",
         "@sveltejs/vite-plugin-svelte": "^5.0.1",
+        "@testing-library/jest-dom": "^6.9.1",
         "@testing-library/svelte": "^5.2.3",
         "@testing-library/user-event": "^14.5.2",
         "@types/eslint": "^9.6.0",
@@ -39,6 +51,7 @@
         "postcss": "^8.4.47",
         "prettier": "^3.1.1",
         "prettier-plugin-svelte": "^3.1.2",
+        "storybook": "^8.4.7",
         "svelte": "^5.0.0",
         "svelte-check": "^4.0.0",
         "tailwindcss": "^3.4.0",
@@ -48,6 +61,7 @@
         "vitest": "^2.1.8"
     },
     "dependencies": {
+        "@storybook/sveltekit": "^8.4.7",
         "axios": "^1.7.0",
         "zod": "^3.23.0"
     }

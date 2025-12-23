@@ -9,6 +9,15 @@ import { config as appConfig, isDevelopment } from '$lib/config';
 import { STORAGE_KEYS } from '$lib/config/constants';
 import type { ApiResponse, ApiError } from '$types/api.types';
 import type { AuthTokens } from '$types/auth.types';
+import {
+	isRetryable,
+	isNetworkError,
+	isTimeoutError,
+	isServerError,
+	isRateLimitError,
+	logError,
+	type ClientError
+} from '$lib/utils/error-handler';
 
 /**
  * Create configured Axios instance
@@ -67,12 +76,18 @@ apiClient.interceptors.request.use(
 			config.headers.Authorization = `Bearer ${tokens.accessToken}`;
 		}
 
-		// Log requests in development
+		// Enhanced logging in development
 		if (isDevelopment && appConfig.dev.debugMode) {
 			console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`, {
 				params: config.params,
-				data: config.data
+				data: config.data,
+				headers: config.headers
 			});
+		}
+
+		// Add request timestamp for timing
+		if (config.headers) {
+			config.headers['X-Request-Start'] = Date.now().toString();
 		}
 
 		return config;
@@ -81,6 +96,20 @@ apiClient.interceptors.request.use(
 		if (isDevelopment) {
 			console.error('[API Request Error]', error);
 		}
+
+		// Log error
+		logError(
+			{
+				message: error.message,
+				code: error.code,
+				timestamp: Date.now()
+			},
+			{
+				method: error.config?.method?.toUpperCase(),
+				url: error.config?.url
+			}
+		);
+
 		return Promise.reject(error);
 	}
 );
@@ -127,32 +156,16 @@ async function refreshAccessToken(): Promise<string> {
 
 		if (response.data.success && response.data.data) {
 			const newTokens = response.data.data;
-			saveTokens(newTokens);
-			return newTokens.accessToken;
-		}
-
-		throw new Error('Token refresh failed');
-	} catch (error) {
-		clearTokens();
-		// Redirect to login - will be handled by the calling code (skip in test environment)
-		if (typeof window !== 'undefined' && import.meta.env.MODE !== 'test') {
-			window.location.href = '/auth/login';
-		}
-		throw error;
-	}
-}
-
-/**
- * Response interceptor - Handle errors and token refresh
- */
-apiClient.interceptors.response.use(
-	(response) => {
-		// Log successful responses in development
+			saEnhanced logging in development
 		if (isDevelopment && appConfig.dev.debugMode) {
+			const requestStart = response.config.headers?.['X-Request-Start'];
+			const duration = requestStart ? Date.now() - parseInt(requestStart as string) : 0;
+
 			console.log(
 				`[API Response] ${response.config.method?.toUpperCase()} ${response.config.url}`,
 				{
 					status: response.status,
+					duration: `${duration}ms`,
 					data: response.data
 				}
 			);
@@ -163,15 +176,34 @@ apiClient.interceptors.response.use(
 	async (error: AxiosError<ApiError>) => {
 		const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
 
-		// Log errors in development
+		// Enhanced error logging
+		const errorInfo: ClientError = {
+			message: error.response?.data?.message || error.message,
+			code: error.code,
+			status: error.response?.status,
+			details: error.response?.data,
+			timestamp: Date.now()
+		};
+
 		if (isDevelopment) {
+			const requestStart = error.config?.headers?.['X-Request-Start'];
+			const duration = requestStart ? Date.now() - parseInt(requestStart as string) : 0;
+
 			console.error('[API Response Error]', {
 				url: error.config?.url,
+				method: error.config?.method?.toUpperCase(),
 				status: error.response?.status,
-				message: error.response?.data?.message || error.message,
+				duration: `${duration}ms`,
+				message: errorInfo.message,
 				error: error.response?.data
 			});
 		}
+
+		// Log error with context
+		logError(errorInfo, {
+			method: error.config?.method?.toUpperCase(),
+			url: error.config?.url
+		});
 
 		// Handle 401 Unauthorized - Try to refresh token
 		if (error.response?.status === 401 && !originalRequest._retry) {
@@ -229,13 +261,92 @@ apiClient.interceptors.response.use(
 
 		// Handle 403 Forbidden
 		if (error.response?.status === 403) {
-			// Could show a toast notification here
-			console.error('Access forbidden');
+			if (isDevelopment) {
+			Enhanced retry interceptor for failed requests
+ * Uses error handler utilities to determine retryability
+ */
+apiClient.interceptors.response.use(undefined, async (error: AxiosError) => {
+	const originalRequest = error.config as AxiosRequestConfig & {
+		_retryCount?: number;
+		_retryReason?: string;
+	};
+
+	// Don't retry if no config (shouldn't happen, but be safe)
+	if (!originalRequest) {
+		return Promise.reject(error);
+	}
+
+	// Don't retry if it's a client error (4xx) unless it's 429 (rate limit) or 408 (timeout)
+	const status = error.response?.status;
+	if (status && status >= 400 && status < 500 && status !== 408 && status !== 429) {
+		return Promise.reject(error);
+	}
+
+	// Use enhanced error handler to check if error is retryable
+	if (!isRetryable(error)) {
+		return Promise.reject(error);
+	}
+
+	// Initialize retry count
+	if (!originalRequest._retryCount) {
+		originalRequest._retryCount = 0;
+	}
+
+	// Determine retry reason for logging
+	if (!originalRequest._retryReason) {
+		if (isNetworkError(error)) {
+			originalRequest._retryReason = 'Network Error';
+		} else if (isTimeoutError(error)) {
+			originalRequest._retryReason = 'Timeout';
+		} else if (isRateLimitError(error)) {
+			originalRequest._retryReason = 'Rate Limit';
+		} else if (isServerError(error)) {
+			originalRequest._retryReason = 'Server Error';
+		} else {
+			originalRequest._retryReason = 'Unknown';
+		}
+	}
+
+	// Check if we should retry
+	const maxRetries = isRateLimitError(error) ? 5 : appConfig.api.retryAttempts;
+
+	if (originalRequest._retryCount < maxRetries) {
+		originalRequest._retryCount++;
+
+		// Calculate delay with exponential backoff
+		let delay = appConfig.api.retryDelay * Math.pow(2, originalRequest._retryCount - 1);
+
+		// For rate limit errors, respect Retry-After header if present
+		if (isRateLimitError(error) && error.response?.headers['retry-after']) {
+			const retryAfter = parseInt(error.response.headers['retry-after']);
+			if (!isNaN(retryAfter)) {
+				delay = retryAfter * 1000; // Convert to milliseconds
+			}
 		}
 
-		// Handle 404 Not Found
-		if (error.response?.status === 404) {
-			console.error('Resource not found');
+		// Cap maximum delay at 30 seconds
+		delay = Math.min(delay, 30000);
+
+		if (isDevelopment) {
+			console.log(
+				`[API Retry] ${originalRequest._retryReason} - Attempt ${originalRequest._retryCount}/${maxRetries} after ${delay}ms`,
+				{
+					url: originalRequest.url,
+					method: originalRequest.method
+				}
+			);
+		}
+
+		await new Promise((resolve) => setTimeout(resolve, delay));
+
+		return apiClient(originalRequest);
+	}
+
+	// Max retries exceeded
+	if (isDevelopment) {
+		console.error(
+			`[API Retry] ${originalRequest._retryReason} - Max retries (${maxRetries}) exceeded for ${originalRequest.url}`
+		nd');
 		}
 
 		// Handle 429 Rate Limit

@@ -18,6 +18,7 @@
 	export let disabled: boolean = false;
 	export let searchable: boolean = false;
 	export let multiple: boolean = false;
+	export let required: boolean = false;
 
 	const dispatch = createEventDispatcher();
 

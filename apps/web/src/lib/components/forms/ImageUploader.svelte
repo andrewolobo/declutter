@@ -1,7 +1,12 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
+	import type { BaseFormProps } from './types';
 
+	export let label: string | undefined = undefined;
+	export let error: string | undefined = undefined;
+	export let disabled: boolean = false;
+	export let required: boolean = false;
 	export let images: string[] = []; // URLs or base64
 	export let maxImages: number = 5;
 	// Reserved for future use - aspect ratio constraint

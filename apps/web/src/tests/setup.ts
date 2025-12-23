@@ -1,5 +1,18 @@
 import { vi, beforeEach, afterEach } from 'vitest';
 import { cleanup } from '@testing-library/svelte';
+import '@testing-library/jest-dom/vitest';
+import MockIcon from './__mocks__/Icon.svelte';
+import MockInput from './__mocks__/Input.svelte';
+
+// Mock the Icon component to avoid CSS preprocessing issues
+vi.mock('$lib/components/ui/Icon.svelte', () => ({
+	default: MockIcon
+}));
+
+// Mock the Input component to avoid CSS preprocessing issues
+vi.mock('$lib/components/forms/Input.svelte', () => ({
+	default: MockInput
+}));
 
 // Mock environment variables
 process.env.VITE_API_BASE_URL = 'http://localhost:3000/api/v1';
