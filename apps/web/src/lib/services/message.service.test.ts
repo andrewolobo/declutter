@@ -424,15 +424,11 @@ describe('Message Service', () => {
 
 			const result = await messageService.uploadMessageAttachment(mockFile);
 
-			expect(apiClient.post).toHaveBeenCalledWith(
-				'/messages/attachments',
-				expect.any(FormData),
-				{
-					headers: {
-						'Content-Type': 'multipart/form-data'
-					}
+			expect(apiClient.post).toHaveBeenCalledWith('/messages/attachments', expect.any(FormData), {
+				headers: {
+					'Content-Type': 'multipart/form-data'
 				}
-			);
+			});
 			expect(result.data?.url).toBe('https://cdn.example.com/image.jpg');
 		});
 	});

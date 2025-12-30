@@ -178,7 +178,10 @@ export function getRecentErrors(count = 10): ErrorLogEntry[] {
 /**
  * Handles API errors and converts them to a standardized format
  */
-export function handleApiError(error: unknown, context?: { method?: string; url?: string }): ClientError {
+export function handleApiError(
+	error: unknown,
+	context?: { method?: string; url?: string }
+): ClientError {
 	let clientError: ClientError;
 
 	if (isAxiosError(error)) {
@@ -691,4 +694,3 @@ export function generateErrorReport(): ErrorReport {
 		networkErrors
 	};
 }
-

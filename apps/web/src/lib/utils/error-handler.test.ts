@@ -151,7 +151,9 @@ describe('Error Handler', () => {
 
 			const result = handleApiError(axiosError);
 
-			expect(result.message).toBe('Network connection failed. Please check your internet connection.');
+			expect(result.message).toBe(
+				'Network connection failed. Please check your internet connection.'
+			);
 			expect(result.code).toBe('ERR_NETWORK');
 			expect(result.retryable).toBe(true);
 		});
@@ -694,7 +696,12 @@ describe('Error Handler', () => {
 			// Log various errors
 			logError({ message: 'Network error', code: 'ERR_NETWORK', status: 0, timestamp: Date.now() });
 			logError({ message: 'Server error', code: 'ERR_SERVER', status: 500, timestamp: Date.now() });
-			logError({ message: 'Server error 2', code: 'ERR_SERVER', status: 503, timestamp: Date.now() });
+			logError({
+				message: 'Server error 2',
+				code: 'ERR_SERVER',
+				status: 503,
+				timestamp: Date.now()
+			});
 			logError({ message: 'Auth error', code: 'ERR_AUTH', status: 401, timestamp: Date.now() });
 
 			const report = generateErrorReport();
