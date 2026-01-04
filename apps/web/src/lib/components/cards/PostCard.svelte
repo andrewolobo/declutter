@@ -114,7 +114,7 @@
 </script>
 
 <div
-	class="bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-slate-200 dark:border-slate-700 {cardClasses}"
+	class="bg-[rgb(16_34_34/0.8)] rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-slate-200 dark:border-slate-700 {cardClasses}"
 	role="button"
 	tabindex="0"
 	onclick={onClick}

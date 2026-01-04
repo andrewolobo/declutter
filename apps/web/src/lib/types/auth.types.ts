@@ -6,6 +6,9 @@ export interface RegisterDTO {
 	password: string;
 	fullName: string;
 	phoneNumber?: string;
+	profilePictureUrl?: string;
+	location?: string;
+	bio?: string;
 }
 
 /**

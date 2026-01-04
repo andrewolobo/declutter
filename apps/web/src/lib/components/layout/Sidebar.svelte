@@ -8,6 +8,7 @@
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import { isAuthenticated, currentUser } from '$lib/stores';
 	import { unreadCount } from '$lib/stores/message.store';
+	import * as authService from '$lib/services/auth.service';
 	
 	interface Props {
 		/** Current active route */
@@ -26,7 +27,8 @@
 	
 	// All navigation items
 	const allNavItems = [
-		{ icon: 'home', label: 'Home', route: '/', requiresAuth: false },
+		{ icon: 'home', label: 'Home', route: '/browse', requiresAuth: false },
+		{ icon: 'add_circle', label: 'Sell', route: '/post/create', requiresAuth: true },
 		{ icon: 'chat', label: 'Messages', route: '/messages', requiresAuth: true },
 		{ icon: 'person', label: 'Profile', route: '/profile', requiresAuth: true },
 		{ icon: 'analytics', label: 'Post Analytics', route: '/analytics', requiresAuth: true }
@@ -58,6 +60,15 @@
 			return activeRoute === '/';
 		}
 		return activeRoute.startsWith(route);
+	}
+	
+	async function handleLogout() {
+		try {
+			await authService.logout();
+			window.location.href = '/';
+		} catch (error) {
+			console.error('Logout error:', error);
+		}
 	}
 </script>
 
@@ -160,7 +171,33 @@
 	</nav>
 	
 	<!-- Bottom Actions -->
-	<div class="p-3 border-t border-gray-200 dark:border-gray-700">
+	<div class="p-3 border-t border-gray-200 dark:border-gray-700 space-y-1">
+		<!-- Login/Logout Button -->
+		{#if $isAuthenticated}
+			<button
+				onclick={handleLogout}
+				class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-danger-600 dark:text-danger-400 hover:bg-danger-50 dark:hover:bg-danger-900/20 transition-colors"
+				aria-label="Sign Out"
+			>
+				<Icon name="logout" size={24} class="text-danger-500" />
+				{#if !collapsed}
+					<span class="font-medium">Sign Out</span>
+				{/if}
+			</button>
+		{:else}
+			<a
+				href="/login"
+				class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+				aria-label="Sign In"
+			>
+				<Icon name="login" size={24} class="text-primary-500" />
+				{#if !collapsed}
+					<span class="font-medium">Sign In</span>
+				{/if}
+			</a>
+		{/if}
+		
+		<!-- Settings Button -->
 		<button
 			class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
 			aria-label="Settings"

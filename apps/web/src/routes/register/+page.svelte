@@ -1,6 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { parsePhoneNumber } from 'libphonenumber-js';
 	import * as authService from '$lib/services/auth.service';
+	import * as userService from '$lib/services/user.service';
+	import AvatarPicker from '$lib/components/media/AvatarPicker.svelte';
+	import PhoneInput from '$lib/components/forms/PhoneInput.svelte';
 
 	// Step management
 	let currentStep = 1;
@@ -12,6 +16,10 @@
 	let confirmPassword = '';
 	let fullName = '';
 	let phoneNumber = '';
+	let phoneCountryCode = '+256';
+	let phoneDigits = '';
+	let checkingPhone = false;
+	let phoneCheckTimeout: number;
 	let profilePicture = '';
 	let location = '';
 	let bio = '';
@@ -69,12 +77,62 @@
 		return '';
 	}
 
-	function validatePhoneNumber(value: string): string {
-		if (!value) return 'Phone number is required';
-		const phoneRegex = /^[0-9]{10,15}$/;
-		const cleanedPhone = value.replace(/\D/g, '');
-		if (!phoneRegex.test(cleanedPhone)) return 'Phone number must be 10-15 digits';
-		return '';
+	function validatePhoneNumber(fullNumber: string): string {
+		if (!fullNumber || fullNumber === phoneCountryCode) {
+			return 'Phone number is required';
+		}
+
+		try {
+			const parsed = parsePhoneNumber(fullNumber);
+			if (!parsed || !parsed.isValid()) {
+				return 'Please enter a valid phone number';
+			}
+			return '';
+		} catch {
+			return 'Invalid phone number format';
+		}
+	}
+
+	// Check phone availability with debounce
+	async function checkPhoneAvailability(fullNumber: string) {
+		if (!fullNumber || fullNumber === phoneCountryCode) return;
+
+		// Clear existing timeout
+		if (phoneCheckTimeout) clearTimeout(phoneCheckTimeout);
+
+		// Debounce: wait 500ms after user stops typing
+		phoneCheckTimeout = setTimeout(async () => {
+			checkingPhone = true;
+
+			try {
+				const response = await fetch(
+					`http://localhost:3000/api/v1/auth/check-phone?phoneNumber=${encodeURIComponent(fullNumber)}`
+				);
+				const data = await response.json();
+
+				if (data.success && !data.data.available) {
+					phoneNumberError = 'This phone number is already registered';
+				} else {
+					phoneNumberError = validatePhoneNumber(fullNumber);
+				}
+			} catch (err) {
+				console.error('Phone check failed:', err);
+				// Don't show error to user, just validate format
+				phoneNumberError = validatePhoneNumber(fullNumber);
+			} finally {
+				checkingPhone = false;
+			}
+		}, 500);
+	}
+
+	// Handle phone number change from PhoneInput component
+	function handlePhoneChange(event: CustomEvent<string>) {
+		const fullNumber = event.detail;
+		phoneNumber = fullNumber;
+
+		if (phoneNumberTouched) {
+			checkPhoneAvailability(fullNumber);
+		}
 	}
 
 	function calculatePasswordStrength(value: string) {
@@ -107,17 +165,6 @@
 	$: fullNameError = fullNameTouched ? validateFullName(fullName) : '';
 	$: phoneNumberError = phoneNumberTouched ? validatePhoneNumber(phoneNumber) : '';
 
-	// Format phone number as user types
-	function formatPhoneNumber(value: string): string {
-		const cleaned = value.replace(/\D/g, '');
-		return cleaned;
-	}
-
-	function handlePhoneInput(event: Event) {
-		const target = event.target as HTMLInputElement;
-		phoneNumber = formatPhoneNumber(target.value);
-	}
-
 	// Step validation - reactive variables
 	$: canProceedFromStep1 = (() => {
 		if (!email || !password || !confirmPassword || !agreedToTerms) return false;
@@ -130,7 +177,7 @@
 	})();
 
 	$: canProceedFromStep2 = (() => {
-		if (!fullName || !phoneNumber) return false;
+		if (!fullName || !phoneNumber || checkingPhone) return false;
 		// Always validate, regardless of touched state
 		const realFullNameError = validateFullName(fullName);
 		const realPhoneNumberError = validatePhoneNumber(phoneNumber);
@@ -180,13 +227,18 @@
 				emailAddress: email,
 				password: password,
 				fullName: fullName,
-				phoneNumber: phoneNumber.replace(/\D/g, '')
+				phoneNumber: phoneNumber, // Already in E.164 format from PhoneInput
+				profilePictureUrl: profilePicture || undefined,
+				location: location || undefined,
+				bio: bio || undefined
 			};
 
 			const response = await authService.register(registerData);
 
 			if (response.success && response.data) {
 				// Auth service automatically stores tokens and user data
+				// All profile data including avatar is now saved in registration
+				
 				// Redirect to browse or onboarding
 				await goto('/browse');
 			} else {
@@ -473,27 +525,25 @@
 			<!-- Phone Number Field -->
 			<div class="flex justify-center w-full">
 				<div class="flex max-w-md w-full flex-col px-4 py-2">
-					<label class="flex flex-col flex-1">
-						<p class="text-white text-base font-medium leading-normal pb-2">
-							Phone Number <span class="text-danger-500">*</span>
-						</p>
-						<input
-							bind:value={phoneNumber}
-							on:input={handlePhoneInput}
-							on:blur={() => phoneNumberTouched = true}
-							type="tel"
-							placeholder="Enter your phone number"
-							disabled={loading}
-							class="rounded-lg text-white bg-[#2D2D2D] h-12 px-4 focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
-							class:border-2={phoneNumberError}
-							class:border-danger-500={phoneNumberError}
-						/>
-						{#if phoneNumberError}
-							<p class="text-danger-500 text-xs mt-1">{phoneNumberError}</p>
-						{:else}
-							<p class="text-gray-500 text-xs mt-1">10-15 digits, numbers only</p>
-						{/if}
-					</label>
+					<p class="text-white text-base font-medium leading-normal pb-2">
+						Phone Number <span class="text-danger-500">*</span>
+					</p>
+					<PhoneInput
+						bind:value={phoneDigits}
+						bind:countryCode={phoneCountryCode}
+						placeholder="700 123 456"
+						required={true}
+						disabled={loading}
+						error={phoneNumberTouched ? phoneNumberError : undefined}
+						on:change={handlePhoneChange}
+						on:blur={() => {
+							phoneNumberTouched = true;
+							if (phoneNumber) checkPhoneAvailability(phoneNumber);
+						}}
+					/>
+					{#if checkingPhone}
+						<p class="text-gray-400 text-xs mt-1">Checking availability...</p>
+					{/if}
 				</div>
 			</div>
 
@@ -525,19 +575,10 @@
 			</p>
 			<p class="text-center text-gray-500 text-xs px-4 pb-6">You can complete this later</p>
 
-			<!-- Profile Picture URL Field -->
+			<!-- Avatar Picker -->
 			<div class="flex justify-center w-full">
-				<div class="flex max-w-md w-full flex-col px-4 py-2">
-					<label class="flex flex-col flex-1">
-						<p class="text-white text-base font-medium leading-normal pb-2">Profile Picture URL</p>
-						<input
-							bind:value={profilePicture}
-							type="url"
-							placeholder="https://example.com/photo.jpg"
-							disabled={loading}
-							class="rounded-lg text-white bg-[#2D2D2D] h-12 px-4 focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
-						/>
-					</label>
+				<div class="flex max-w-2xl w-full flex-col px-4 py-2">
+					<AvatarPicker email={email} bind:selected={profilePicture} />
 				</div>
 			</div>
 

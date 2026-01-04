@@ -63,6 +63,7 @@
     "dependencies": {
         "@storybook/sveltekit": "^8.4.7",
         "axios": "^1.7.0",
+        "libphonenumber-js": "^1.12.33",
         "zod": "^3.23.0"
     }
 }

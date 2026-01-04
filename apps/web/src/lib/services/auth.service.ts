@@ -10,6 +10,7 @@ import type {
 	PhoneVerificationDTO
 } from '$types/auth.types';
 import { STORAGE_KEYS } from '$lib/config/constants';
+import { userStore } from '$lib/stores/user.store';
 
 /**
  * Authentication Service
@@ -156,6 +157,9 @@ function setAuthData(authResponse: AuthResponse): void {
 
 	setAuthTokens(authResponse.tokens);
 	localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(authResponse.user));
+	
+	// Update the user store to trigger reactivity
+	userStore.setCurrentUser(authResponse.user as any);
 }
 
 /**
@@ -177,6 +181,9 @@ export function clearAuthData(): void {
 	localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
 	localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
 	localStorage.removeItem(STORAGE_KEYS.USER);
+	
+	// Clear the user store
+	userStore.setCurrentUser(null);
 }
 
 /**

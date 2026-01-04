@@ -68,4 +68,11 @@ router.post(
   authController.oauthFacebook
 );
 
+/**
+ * @route   GET /api/v1/auth/check-phone
+ * @desc    Check if phone number is available for registration
+ * @access  Public
+ */
+router.get("/check-phone", authController.checkPhoneAvailability);
+
 export default router;

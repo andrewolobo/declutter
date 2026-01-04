@@ -35,6 +35,23 @@ export class AuthService {
         };
       }
 
+      // Check if phone number already exists (if provided)
+      if (data.phoneNumber && data.phoneNumber !== "") {
+        const existingPhone = await userRepository.findByPhoneNumber(
+          data.phoneNumber
+        );
+        if (existingPhone) {
+          return {
+            success: false,
+            error: {
+              code: ErrorCode.RESOURCE_ALREADY_EXISTS,
+              message: "This phone number is already registered",
+              statusCode: 409,
+            },
+          };
+        }
+      }
+
       // Validate password strength
       const passwordValidation = PasswordUtil.validateStrength(data.password);
       if (!passwordValidation.valid) {
@@ -58,6 +75,9 @@ export class AuthService {
         passwordHash: hashedPassword,
         fullName: data.fullName,
         oauthProvider: "Local",
+        profilePictureUrl: data.profilePictureUrl,
+        location: data.location,
+        bio: data.bio,
       });
 
       // Generate tokens

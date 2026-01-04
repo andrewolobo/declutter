@@ -4,6 +4,7 @@
  */
 import { Request, Response, NextFunction } from "express";
 import { authService } from "../services";
+import { userRepository } from "../dal/repositories";
 import {
   RegisterDTO,
   LoginDTO,
@@ -130,6 +131,36 @@ export class AuthController {
       }
 
       return res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Check if phone number is available for registration
+   * GET /api/v1/auth/check-phone
+   */
+  async checkPhoneAvailability(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { phoneNumber } = req.query;
+
+      if (!phoneNumber || typeof phoneNumber !== "string") {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Phone number is required",
+            statusCode: 400,
+          },
+        });
+      }
+
+      const existingUser = await userRepository.findByPhoneNumber(phoneNumber);
+
+      return res.status(200).json({
+        success: true,
+        data: { available: !existingUser },
+      });
     } catch (error) {
       next(error);
     }

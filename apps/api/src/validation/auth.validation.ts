@@ -16,7 +16,22 @@ export const registerSchema = Joi.object({
     "string.min": "Full name must be at least 2 characters long",
     "any.required": "Full name is required",
   }),
-  phoneNumber: Joi.string().optional(),
+  phoneNumber: Joi.string()
+    .pattern(/^\+[1-9]\d{1,14}$/)
+    .optional()
+    .messages({
+      "string.pattern.base":
+        "Phone number must be in international format (e.g., +256700123456)",
+    }),
+  profilePictureUrl: Joi.string().uri().optional().messages({
+    "string.uri": "Profile picture URL must be a valid URI",
+  }),
+  location: Joi.string().max(255).optional().messages({
+    "string.max": "Location must not exceed 255 characters",
+  }),
+  bio: Joi.string().max(500).optional().messages({
+    "string.max": "Bio must not exceed 500 characters",
+  }),
 });
 
 export const loginSchema = Joi.object({

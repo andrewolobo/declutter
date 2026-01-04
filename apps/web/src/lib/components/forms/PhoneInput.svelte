@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
+	import { parsePhoneNumber, isValidPhoneNumber } from 'libphonenumber-js';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import type { BaseInputProps } from './types';
 
@@ -18,13 +19,13 @@
 	let dropdownElement: HTMLDivElement;
 
 	const countryCodes = [
-		{ code: '+256', country: 'Uganda', flag: '🇺🇬' },
-		{ code: '+254', country: 'Kenya', flag: '🇰🇪' },
-		{ code: '+255', country: 'Tanzania', flag: '🇹🇿' },
-		{ code: '+250', country: 'Rwanda', flag: '🇷🇼' },
-		{ code: '+257', country: 'Burundi', flag: '🇧🇮' },
-		{ code: '+1', country: 'USA/Canada', flag: '🇺🇸' },
-		{ code: '+44', country: 'UK', flag: '🇬🇧' }
+		{ code: '+256', country: 'Uganda', flag: '🇺🇬', iso2: 'UG' },
+		{ code: '+254', country: 'Kenya', flag: '🇰🇪', iso2: 'KE' },
+		{ code: '+255', country: 'Tanzania', flag: '🇹🇿', iso2: 'TZ' },
+		{ code: '+250', country: 'Rwanda', flag: '🇷🇼', iso2: 'RW' },
+		{ code: '+257', country: 'Burundi', flag: '🇧🇮', iso2: 'BI' },
+		{ code: '+1', country: 'USA/Canada', flag: '🇺🇸', iso2: 'US' },
+		{ code: '+44', country: 'UK', flag: '🇬🇧', iso2: 'GB' }
 	];
 
 	function formatPhoneNumber(phone: string): string {
@@ -41,14 +42,16 @@
 		const target = e.target as HTMLInputElement;
 		const rawValue = target.value.replace(/\D/g, '');
 
-		// Limit to 9 digits for Uganda
-		const limitedValue = rawValue.slice(0, 9);
+		// Limit to reasonable length
+		const limitedValue = rawValue.slice(0, 15);
 		value = limitedValue;
 
 		// Update display with formatting
 		target.value = formatPhoneNumber(limitedValue);
 
-		dispatch('change', countryCode + limitedValue);
+		// Dispatch full E.164 formatted number
+		const fullNumber = countryCode + limitedValue;
+		dispatch('change', fullNumber);
 	}
 
 	function handleFocus() {
@@ -57,16 +60,24 @@
 
 	function handleBlur() {
 		focused = false;
+		dispatch('blur');
 	}
 
 	function toggleCountryDropdown() {
-		isCountryDropdownOpen = !isCountryDropdownOpen;
+		if (!disabled) {
+			isCountryDropdownOpen = !isCountryDropdownOpen;
+		}
 	}
 
 	function selectCountry(code: string) {
 		countryCode = code;
 		isCountryDropdownOpen = false;
-		dispatch('change', countryCode + value);
+		
+		// Re-emit full number when country changes
+		if (value) {
+			const fullNumber = countryCode + value;
+			dispatch('change', fullNumber);
+		}
 	}
 
 	function handleClickOutside(event: MouseEvent) {
@@ -75,19 +86,34 @@
 		}
 	}
 
-	function validatePhone(): boolean {
-		if (!value) return true;
+	function validatePhone(): { valid: boolean; message?: string } {
+		if (!value || value.length === 0) return { valid: true };
 
-		// Uganda phone numbers should be 9 digits
-		if (countryCode === '+256') {
-			return /^[0-9]{9}$/.test(value);
+		const fullNumber = countryCode + value;
+		const selectedCountry = countryCodes.find((c) => c.code === countryCode);
+
+		try {
+			const phoneNumber = parsePhoneNumber(fullNumber, selectedCountry?.iso2);
+
+			if (!phoneNumber || !phoneNumber.isValid()) {
+				return {
+					valid: false,
+					message: `Invalid phone number for ${selectedCountry?.country || 'selected country'}`
+				};
+			}
+
+			return { valid: true };
+		} catch (err) {
+			return {
+				valid: false,
+				message: 'Invalid phone number format'
+			};
 		}
-
-		// Basic validation for other countries
-		return value.length >= 7;
 	}
 
-	$: hasError = !!error || (value && !validatePhone());
+	$: validation = validatePhone();
+	$: hasError = !!error || !validation.valid;
+	$: errorMessage = error || validation.message;
 	$: selectedCountry = countryCodes.find((c) => c.code === countryCode) || countryCodes[0];
 	$: formattedDisplay = value ? formatPhoneNumber(value) : '';
 </script>
@@ -103,10 +129,10 @@
 
 	<div class="phone-input-container" class:focused class:error={hasError}>
 		<div bind:this={dropdownElement} class="country-selector">
-			<button type="button" class="country-button" on:click={toggleCountryDropdown}>
+			<button type="button" class="country-button" on:click={toggleCountryDropdown} {disabled}>
 				<span class="flag">{selectedCountry.flag}</span>
 				<span class="code">{countryCode}</span>
-				<Icon name={isCountryDropdownOpen ? 'chevron-up' : 'chevron-down'} size={16} />
+				<Icon name={isCountryDropdownOpen ? 'expand_less' : 'expand_more'} size={16} />
 			</button>
 
 			{#if isCountryDropdownOpen}
@@ -135,6 +161,7 @@
 		<input
 			type="tel"
 			{placeholder}
+			{disabled}
 			value={formattedDisplay}
 			id={label}
 			on:input={handleInput}
@@ -144,17 +171,11 @@
 		/>
 	</div>
 
-	{#if error}
-		<span class="error-message">{error}</span>
-	{:else if value && !validatePhone()}
-		<span class="error-message">Invalid phone number format</span>
+	{#if errorMessage}
+		<span class="error-message">{errorMessage}</span>
 	{:else}
 		<span class="hint-text">
-			{#if countryCode === '+256'}
-				Enter 9-digit number (e.g., 700 123 456)
-			{:else}
-				Enter phone number
-			{/if}
+			Enter phone number
 		</span>
 	{/if}
 </div>
