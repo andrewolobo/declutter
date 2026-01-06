@@ -146,6 +146,13 @@ model Message {
   content        String    @db.NVarChar(Max) @map("MessageContent")
   messageType    String    @default("text") @db.NVarChar(20) @map("MessageType")
   attachmentUrl  String?   @db.NVarChar(500) @map("AttachmentURL")
+  // Recipient read status (has the recipient read this message?)
+  isReadByRecipient Boolean   @default(false) @map("IsReadByRecipient")
+  recipientReadAt   DateTime? @map("RecipientReadAt") @db.DateTime2
+  // Sender read status (has the sender seen/acknowledged the conversation since sending?)
+  isReadBySender    Boolean   @default(true) @map("IsReadBySender")
+  senderReadAt      DateTime? @map("SenderReadAt") @db.DateTime2
+  // Legacy field kept for backward compatibility (maps to isReadByRecipient behavior)
   isRead         Boolean   @default(false) @map("IsRead")
   readAt         DateTime? @map("ReadAt") @db.DateTime2
   isDeleted      Boolean   @default(false) @map("IsDeleted")
@@ -163,6 +170,11 @@ model Message {
   parentMessage  Message?  @relation("MessageReplies", fields: [parentMessageId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   replies        Message[] @relation("MessageReplies")
 
+  @@index([senderId], map: "IX_Messages_SenderID")
+  @@index([recipientId], map: "IX_Messages_RecipientID")
+  @@index([senderId, recipientId], map: "IX_Messages_Conversation")
+  @@index([postId], map: "IX_Messages_PostID")
+  @@index([createdAt(sort: Desc)], map: "IX_Messages_CreatedAt")
   @@map("Messages")
 }
 

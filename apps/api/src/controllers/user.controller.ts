@@ -13,6 +13,25 @@ import {
 
 export class UserController {
   /**
+   * Get user profile by ID (public)
+   * GET /api/v1/users/:id
+   */
+  async getUserById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = parseInt(req.params.id, 10);
+      const result = await userService.getProfile(userId);
+
+      if (!result.success) {
+        return res.status(result.error!.statusCode).json(result);
+      }
+
+      return res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
    * Get current user profile
    * GET /api/v1/users/me
    */

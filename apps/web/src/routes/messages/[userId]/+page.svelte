@@ -10,7 +10,10 @@
 	import Avatar from '$lib/components/media/Avatar.svelte';
 	import Sidebar from '$lib/components/layout/Sidebar.svelte';
 	import type { MessageResponseDTO } from '$lib/types/message.types';
-	import { getMockMessages, getMockUser } from '$lib/utils/mock-messages';
+	import { getMessages, sendMessage, markConversationAsRead } from '$lib/services/message.service';
+	import { getUserById } from '$lib/services/user.service';
+	import { currentUser } from '$lib/stores';
+	import type { UserProfileDTO } from '$lib/types/user.types';
 
 	// Get userId from URL parameter
 	let userId = 0;
@@ -26,26 +29,37 @@
 	let newMessage = '';
 	let loading = true;
 	let sending = false;
+	let error: string | null = null;
 	let messageContainer: HTMLElement;
 	let isMobile = false;
-
-	// Current user (mock)
-	const currentUserId = 100;
+	let pollingInterval: ReturnType<typeof setInterval> | null = null;
+	const POLL_INTERVAL_MS = 5000; // Poll every 5 seconds
 
 	// Get conversation partner info (will be set in onMount)
-	let otherUser: ReturnType<typeof getMockUser> = null;
+	let otherUser: UserProfileDTO | null = null;
 
-	onMount(() => {
+	// Current user ID from store
+	$: currentUserId = $currentUser?.id || 0;
+
+	onMount(async () => {
 		// Get userId from URL if not already set
 		if (!userId) {
 			const pathParts = window.location.pathname.split('/');
 			userId = Number(pathParts[pathParts.length - 1]);
 		}
 
-		// Get other user info
-		otherUser = getMockUser(userId);
-		if (!otherUser) {
-			// User not found, redirect back to messages
+		// Fetch other user info
+		try {
+			const userResponse = await getUserById(userId);
+			if (userResponse.success && userResponse.data) {
+				otherUser = userResponse.data;
+			} else {
+				// User not found, redirect back to messages
+				window.location.href = '/messages';
+				return;
+			}
+		} catch (err) {
+			console.error('Error loading user:', err);
 			window.location.href = '/messages';
 			return;
 		}
@@ -54,10 +68,58 @@
 		checkScreenSize();
 		window.addEventListener('resize', checkScreenSize);
 
+		// Start polling for new messages
+		startPolling();
+
+		// Pause polling when tab is hidden, resume when visible
+		document.addEventListener('visibilitychange', handleVisibilityChange);
+
 		return () => {
 			window.removeEventListener('resize', checkScreenSize);
+			document.removeEventListener('visibilitychange', handleVisibilityChange);
+			stopPolling();
 		};
 	});
+
+	function handleVisibilityChange() {
+		if (document.hidden) {
+			stopPolling();
+		} else {
+			startPolling();
+		}
+	}
+
+	function startPolling() {
+		if (pollingInterval) return; // Already polling
+		pollingInterval = setInterval(pollForNewMessages, POLL_INTERVAL_MS);
+	}
+
+	function stopPolling() {
+		if (pollingInterval) {
+			clearInterval(pollingInterval);
+			pollingInterval = null;
+		}
+	}
+
+	async function pollForNewMessages() {
+		// Don't poll if we're in a loading or error state
+		if (loading || error) return;
+
+		try {
+			const response = await getMessages(userId, 50, 0);
+			if (response.success && response.data) {
+				// Only update if there are new messages
+				if (response.data.length !== messages.length) {
+					messages = response.data;
+					// Note: Conversation is marked as read only when user opens it,
+					// not during polling, so new messages show as unread in sidebar
+				}
+			}
+		} catch (err) {
+			console.error('Polling error:', err);
+			// Don't set error state for polling failures
+		}
+	}
 
 	afterUpdate(() => {
 		// Auto-scroll to bottom when new messages are added
@@ -70,42 +132,78 @@
 		isMobile = window.innerWidth < 768;
 	}
 
-	function loadMessages() {
+	async function loadMessages() {
 		loading = true;
-		// Simulate API delay
-		setTimeout(() => {
-			messages = getMockMessages(userId);
+		error = null;
+		
+		try {
+			const response = await getMessages(userId, 50, 0);
+			if (response.success && response.data) {
+				messages = response.data;
+				// Mark conversation as read when recipient opens it
+				try {
+					await markConversationAsRead(userId);
+				} catch (err) {
+					console.error('Error marking conversation as read:', err);
+				}
+			} else {
+				error = 'Failed to load messages';
+			}
+		} catch (err) {
+			console.error('Error loading messages:', err);
+			error = 'Failed to load messages';
+		} finally {
 			loading = false;
-		}, 300);
+		}
 	}
 
 	async function handleSendMessage() {
-		if (!newMessage.trim() || sending) return;
+		// Validate inputs
+		if (!newMessage.trim()) return;
+		
+		if (!currentUserId) {
+			alert('You must be logged in to send messages.');
+			return;
+		}
+		
+		if (sending) return;
 
 		sending = true;
+		const messageText = newMessage.trim();
+		newMessage = ''; // Clear input immediately for better UX
 
-		// Create new message
-		const message: MessageResponseDTO = {
-			messageId: Date.now(),
-			senderId: currentUserId,
-			recipientId: userId,
-			messageContent: newMessage.trim(),
-			messageType: 'text',
-			isRead: false,
-			isDeleted: false,
-			isEdited: false,
-			createdAt: new Date(),
-			updatedAt: new Date()
-		};
+		try {
+			const response = await sendMessage({
+				recipientId: userId,
+				messageContent: messageText,
+				messageType: 'text'
+			});
 
-		// Optimistic update
-		messages = [...messages, message];
-		newMessage = '';
-
-		// Simulate API call
-		setTimeout(() => {
+			if (response.success && response.data) {
+				// Add the sent message to the list
+				messages = [...messages, response.data];
+				// Scroll to bottom after next render
+				setTimeout(() => {
+					if (messageContainer) {
+						messageContainer.scrollTop = messageContainer.scrollHeight;
+					}
+				}, 0);
+			} else {
+				// Restore message on error
+				newMessage = messageText;
+				const errorMsg = response.error?.message || 'Failed to send message';
+				console.error('Send message failed:', response.error);
+				alert(`Failed to send message: ${errorMsg}`);
+			}
+		} catch (err: any) {
+			console.error('Error sending message:', err);
+			// Restore message on error
+			newMessage = messageText;
+			const errorMsg = err?.response?.data?.error?.message || err?.message || 'Unknown error';
+			alert(`Failed to send message: ${errorMsg}`);
+		} finally {
 			sending = false;
-		}, 500);
+		}
 	}
 
 	function handleKeyPress(event: KeyboardEvent) {
@@ -232,6 +330,18 @@
 						<p class="text-slate-500 dark:text-slate-400">Loading messages...</p>
 					</div>
 				</div>
+			{:else if error}
+				<div class="flex flex-col items-center justify-center h-full text-center">
+					<Icon name="error" size={64} class="text-red-300 dark:text-red-600 mb-4" />
+					<h2 class="text-xl font-semibold text-slate-900 dark:text-white mb-2">Error</h2>
+					<p class="text-slate-500 dark:text-slate-400 mb-4">{error}</p>
+					<button
+						onclick={loadMessages}
+						class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+					>
+						Retry
+					</button>
+				</div>
 			{:else if messages.length === 0}
 				<div class="flex flex-col items-center justify-center h-full text-center">
 					<Icon name="chat_bubble" size={64} class="text-slate-300 dark:text-slate-600 mb-4" />
@@ -283,7 +393,7 @@
 								</span>
 								{#if isMyMessage(message)}
 									<span class="text-xs text-slate-500 dark:text-slate-400">
-										{#if message.isRead}
+										{#if message.isReadByRecipient}
 											<Icon name="done_all" size={14} class="text-primary" />
 										{:else}
 											<Icon name="done" size={14} />

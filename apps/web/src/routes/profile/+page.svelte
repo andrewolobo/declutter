@@ -26,7 +26,7 @@
 
 	// Navigation items
 	const navItems = [
-		{ icon: 'list_alt', label: 'My Listings', route: '/profile/listings' },
+		{ icon: 'list_alt', label: 'My Listings', route: '/post/my-listings' },
 		// { icon: 'bookmark', label: 'Saved Items', route: '/profile/saved' },
 		// { icon: 'shopping_bag', label: 'My Purchases', route: '/profile/purchases' },
 		{ icon: 'help', label: 'Help & Support', route: '/help' }
@@ -43,7 +43,7 @@
 </script>
 
 <svelte:head>
-	<title>Profile - TundaPlug</title>
+	<title>Profile - TundaHub</title>
 </svelte:head>
 
 <div

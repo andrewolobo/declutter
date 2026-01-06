@@ -142,6 +142,8 @@ function handleWebSocketMessage(data: any): void {
 			if (data.message) {
 				messageStore.addMessage(data.message);
 				messageStore.updateConversationPreview(data.message);
+				// Increment unread count for incoming messages
+				messageStore.incrementUnreadCount();
 			}
 			break;
 
@@ -482,7 +484,7 @@ export async function markConversationAsRead(userId: number): Promise<ApiRespons
  */
 export async function getUnreadCount(): Promise<ApiResponse<{ count: number }>> {
 	try {
-		const response = await apiClient.get<ApiResponse<{ count: number }>>('/messages/unread/count');
+		const response = await apiClient.get<ApiResponse<{ count: number }>>('/messages/unread-count');
 
 		// Update store
 		if (response.data.data) {

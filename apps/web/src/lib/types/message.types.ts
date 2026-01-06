@@ -23,6 +23,12 @@ export interface MessageResponseDTO {
 	messageContent: string;
 	messageType: MessageType;
 	attachmentUrl?: string;
+	// Dual-party read tracking
+	isReadByRecipient: boolean;
+	recipientReadAt?: Date | string;
+	isReadBySender: boolean;
+	senderReadAt?: Date | string;
+	// Legacy field (mirrors isReadByRecipient for backward compatibility)
 	isRead: boolean;
 	readAt?: Date | string;
 	isDeleted: boolean;

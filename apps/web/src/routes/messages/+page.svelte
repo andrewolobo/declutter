@@ -13,20 +13,20 @@
 	import MobileBottomNav from '$lib/components/layout/MobileBottomNav.svelte';
 	import { isAuthenticated } from '$lib/stores';
 	import type { ConversationPreviewDTO } from '$lib/types/message.types';
-	import { getMockConversations } from '$lib/utils/mock-messages';
+	import { getConversations, markConversationAsRead } from '$lib/services/message.service';
 
-	// Mock data - will be replaced with API calls
 	let conversations: ConversationPreviewDTO[] = [];
 	let selectedConversationId: number | null = null;
 	let searchQuery = '';
 	let loading = true;
+	let error: string | null = null;
 
 	// Responsive state
 	let isMobile = false;
 
 	onMount(() => {
-		// Load mock conversations
-		loadMockConversations();
+		// Load conversations from API
+		loadConversations();
 
 		// Check screen size
 		checkScreenSize();
@@ -41,14 +41,39 @@
 		isMobile = window.innerWidth < 768;
 	}
 
-	function loadMockConversations() {
-		// Load mock conversations
-		conversations = getMockConversations();
-		loading = false;
+	async function loadConversations() {
+		loading = true;
+		error = null;
+		
+		try {
+			const response = await getConversations(20, 0);
+			if (response.success && response.data) {
+				conversations = response.data;
+			} else {
+				error = 'Failed to load conversations';
+			}
+		} catch (err) {
+			console.error('Error loading conversations:', err);
+			error = 'Failed to load conversations';
+		} finally {
+			loading = false;
+		}
 	}
 
-	function selectConversation(userId: number) {
+	async function selectConversation(userId: number) {
 		selectedConversationId = userId;
+		
+		// Mark conversation as read when user clicks on it
+		try {
+			await markConversationAsRead(userId);
+			// Update local state to remove unread badge immediately
+			conversations = conversations.map(conv => 
+				conv.userId === userId ? { ...conv, unreadCount: 0 } : conv
+			);
+		} catch (err) {
+			console.error('Error marking conversation as read:', err);
+		}
+		
 		// Navigate to conversation detail page
 		window.location.href = `/messages/${userId}`;
 	}
@@ -83,7 +108,7 @@
 </script>
 
 <svelte:head>
-	<title>Messages - DEC_L</title>
+	<title>Messages - TundaHub</title>
 </svelte:head>
 
 <div class="messages-container">
@@ -119,6 +144,18 @@
 			{#if loading}
 				<div class="flex items-center justify-center p-8">
 					<p class="text-slate-500 dark:text-slate-400">Loading conversations...</p>
+				</div>
+			{:else if error}
+				<div class="flex flex-col items-center justify-center p-8 text-center">
+					<Icon name="error" size={64} class="text-red-300 dark:text-red-600 mb-4" />
+					<h2 class="text-xl font-semibold text-slate-900 dark:text-white mb-2">Error</h2>
+					<p class="text-slate-500 dark:text-slate-400 mb-4">{error}</p>
+					<button
+						onclick={loadConversations}
+						class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+					>
+						Retry
+					</button>
 				</div>
 			{:else if filteredConversations.length === 0}
 				<div class="flex flex-col items-center justify-center p-8 text-center">

@@ -62,8 +62,8 @@ export const validateQuery = (schema: Joi.Schema) => {
       });
     }
 
-    // Replace query with validated and sanitized data
-    req.query = value as any;
+    // Store validated query in a custom property since req.query is read-only
+    Object.assign(req.query, value);
     next();
   };
 };

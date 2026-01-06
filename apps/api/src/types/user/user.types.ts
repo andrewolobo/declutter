@@ -11,6 +11,7 @@ export interface UserProfileDTO {
   bio?: string;
   isEmailVerified: boolean;
   isPhoneVerified: boolean;
+  isOnline?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

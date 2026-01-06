@@ -78,10 +78,16 @@
 
 	function handleMessage() {
 		if (post?.user.id) {
-			goto(`/messages/${post.user.id}`);
+			const autoMessage = encodeURIComponent(`I'm interested in: ${post.title}`);
+			goto(`/messages/${post.user.id}?autoMessage=${autoMessage}`);
 		}
 	}
 </script>
+
+
+<svelte:head>
+	<title>Create - TundaHub</title>
+</svelte:head>
 
 <div class="flex h-screen overflow-hidden bg-[#f6f8f8] dark:bg-[#102222]">
 	<!-- Sidebar - Desktop Only -->

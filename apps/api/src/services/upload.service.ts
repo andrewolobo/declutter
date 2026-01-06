@@ -334,10 +334,7 @@ export class UploadService {
   private generateBlobName(userId: number, file: Express.Multer.File): string {
     const timestamp = Date.now();
     const uuid = uuidv4();
-    const ext = path
-      .extname(file.originalname)
-      .toLowerCase()
-      .replace(".", "");
+    const ext = path.extname(file.originalname).toLowerCase().replace(".", "");
     const sanitizedExt = ext || "jpg"; // Default to jpg if no extension
 
     return `${userId}-${timestamp}-${uuid}.${sanitizedExt}`;
@@ -441,14 +438,16 @@ export class UploadService {
    * @returns Signed URL with fresh SAS token
    */
   public generateDynamicSasUrl(
-    blobUrl: string, 
+    blobUrl: string,
     expiryMinutes: number = azureConfig.sas.defaultExpiryMinutes
   ): string {
-    if (!blobUrl) return '';
+    if (!blobUrl) return "";
 
     // Check if we have the storage account key for credential-based SAS
     if (!this.sharedKeyCredential) {
-      console.warn('Storage account key not configured. Falling back to static SAS token.');
+      console.warn(
+        "Storage account key not configured. Falling back to static SAS token."
+      );
       // Fallback to existing static SAS method
       const blobName = this.extractBlobName(blobUrl);
       return this.generateSignedUrl(blobName);
@@ -457,15 +456,16 @@ export class UploadService {
     // Extract blob name from full URL or use as-is if already a path
     const blobName = this.extractBlobName(blobUrl);
 
-    const startsOn = new Date();
-    const expiresOn = new Date(startsOn.getTime() + expiryMinutes * 60 * 1000);
+    // Set start time 5 minutes in the past to account for clock skew between systems
+    const startsOn = new Date(Date.now() - 5 * 60 * 1000);
+    const expiresOn = new Date(Date.now() + expiryMinutes * 60 * 1000);
 
     // Generate SAS token with read-only permissions
     const sasToken = generateBlobSASQueryParameters(
       {
         containerName: azureConfig.containerName,
         blobName,
-        permissions: BlobSASPermissions.parse('r'), // Read-only
+        permissions: BlobSASPermissions.parse("r"), // Read-only
         startsOn,
         expiresOn,
       },
@@ -483,24 +483,24 @@ export class UploadService {
    */
   private extractBlobName(blobUrl: string): string {
     // If it's already just a path (no http), return as-is
-    if (!blobUrl.startsWith('http://') && !blobUrl.startsWith('https://')) {
+    if (!blobUrl.startsWith("http://") && !blobUrl.startsWith("https://")) {
       return blobUrl;
     }
 
     try {
       // Remove query parameters (SAS token)
-      const urlWithoutQuery = blobUrl.split('?')[0];
-      
+      const urlWithoutQuery = blobUrl.split("?")[0];
+
       // Parse URL and extract path
       const url = new URL(urlWithoutQuery);
-      const pathParts = url.pathname.split('/').filter(Boolean);
-      
+      const pathParts = url.pathname.split("/").filter(Boolean);
+
       // Remove container name (first part) and return the rest
       // e.g., /images/123-uuid.jpg -> 123-uuid.jpg
       if (pathParts.length > 1) {
-        return pathParts.slice(1).join('/');
+        return pathParts.slice(1).join("/");
       }
-      
+
       // If only one part, it's likely just the blob name
       return pathParts[0] || blobUrl;
     } catch (error) {
@@ -526,7 +526,7 @@ export class UploadService {
   ): PostImageDTO[] {
     if (!images || images.length === 0) return [];
 
-    return images.map(img => ({
+    return images.map((img) => ({
       ...img,
       imageUrl: this.generateDynamicSasUrl(img.imageUrl, expiryMinutes),
     }));
@@ -566,7 +566,7 @@ export class UploadService {
     imageUrl: string | undefined,
     expiryMinutes?: number
   ): string {
-    if (!imageUrl) return '';
+    if (!imageUrl) return "";
     return this.generateDynamicSasUrl(imageUrl, expiryMinutes);
   }
 

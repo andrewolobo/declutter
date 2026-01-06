@@ -10,9 +10,9 @@ export const azureConfig = {
 
   // SAS Token Configuration for Dynamic Generation
   sas: {
-    defaultExpiryMinutes: 60,      // Standard API responses (1 hour)
-    shortExpiryMinutes: 15,        // Sensitive content (15 minutes)
-    longExpiryMinutes: 1440,       // Special cases (24 hours)
+    defaultExpiryMinutes: 60, // Standard API responses (1 hour)
+    shortExpiryMinutes: 15, // Sensitive content (15 minutes)
+    longExpiryMinutes: 1440, // Special cases (24 hours)
   },
 
   // Upload Configuration

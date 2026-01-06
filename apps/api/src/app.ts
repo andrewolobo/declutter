@@ -10,6 +10,7 @@ import {
   categoryRoutes,
   paymentRoutes,
   uploadRoutes,
+  messageRoutes,
 } from "./routes";
 
 export const createApp = (): Application => {
@@ -42,6 +43,7 @@ export const createApp = (): Application => {
   app.use(`${appConfig.apiPrefix}/categories`, categoryRoutes);
   app.use(`${appConfig.apiPrefix}/payments`, paymentRoutes);
   app.use(`${appConfig.apiPrefix}/upload`, uploadRoutes);
+  app.use(`${appConfig.apiPrefix}/messages`, messageRoutes);
 
   // 404 handler for undefined routes (must be after all routes)
   app.use(notFoundHandler);

@@ -123,9 +123,11 @@ function createMessageStore() {
 					}
 				});
 
-				// Update conversation preview
+				// Update conversation preview and decrement global unread count
 				const conversation = state.conversations.get(userId);
-				if (conversation) {
+				if (conversation && conversation.unreadCount > 0) {
+					// Decrement global unread count by the conversation's unread count
+					state.unreadCount = Math.max(0, state.unreadCount - conversation.unreadCount);
 					state.conversations.set(userId, {
 						...conversation,
 						unreadCount: 0

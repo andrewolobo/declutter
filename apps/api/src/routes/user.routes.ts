@@ -10,6 +10,7 @@ import {
   changePasswordSchema,
   resetPasswordRequestSchema,
   resetPasswordSchema,
+  userIdParamSchema,
 } from "../validation/user.validation";
 
 const router = Router();
@@ -112,6 +113,19 @@ router.post(
   authenticate,
   createLimiter,
   userController.verifyPhone
+);
+
+/**
+ * @route   GET /api/v1/users/:id
+ * @desc    Get user profile by ID (public)
+ * @access  Public
+ * @note    This route MUST be last to avoid capturing other routes like /profile
+ */
+router.get(
+  "/:id",
+  readLimiter,
+  validateParams(userIdParamSchema),
+  userController.getUserById
 );
 
 export default router;

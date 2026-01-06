@@ -9,3 +9,4 @@ export { default as postRoutes } from "./post.routes";
 export { default as categoryRoutes } from "./category.routes";
 export { default as paymentRoutes } from "./payment.routes";
 export { uploadRoutes } from "./upload.routes";
+export { default as messageRoutes } from "./message.routes";

@@ -37,3 +37,12 @@ export const resetPasswordSchema = Joi.object({
     "any.required": "New password is required",
   }),
 });
+
+export const userIdParamSchema = Joi.object({
+  id: Joi.number().integer().positive().required().messages({
+    "number.base": "User ID must be a number",
+    "number.integer": "User ID must be an integer",
+    "number.positive": "User ID must be a positive number",
+    "any.required": "User ID is required",
+  }),
+});
