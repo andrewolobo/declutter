@@ -178,57 +178,56 @@ export class MessageRepository extends BaseRepository<Message> {
       WITH ConversationUsers AS (
         SELECT DISTINCT
           CASE
-            WHEN SenderID = ${userId} THEN RecipientID
-            ELSE SenderID
-          END AS OtherUserId
-        FROM Messages
-        WHERE (SenderID = ${userId} OR RecipientID = ${userId})
-          AND IsDeleted = 0
+            WHEN "SenderID" = ${userId} THEN "RecipientID"
+            ELSE "SenderID"
+          END AS "OtherUserId"
+        FROM "Messages"
+        WHERE ("SenderID" = ${userId} OR "RecipientID" = ${userId})
+          AND "IsDeleted" = false
       ),
       LastMessages AS (
         SELECT
-          cu.OtherUserId,
-          m.MessageID,
-          m.MessageContent,
-          m.CreatedAt,
-          m.SenderID,
-          m.PostID,
-          ROW_NUMBER() OVER (PARTITION BY cu.OtherUserId ORDER BY m.CreatedAt DESC) as rn
+          cu."OtherUserId",
+          m."MessageID",
+          m."MessageContent",
+          m."CreatedAt",
+          m."SenderID",
+          m."PostID",
+          ROW_NUMBER() OVER (PARTITION BY cu."OtherUserId" ORDER BY m."CreatedAt" DESC) as rn
         FROM ConversationUsers cu
-        INNER JOIN Messages m ON (
-          (m.SenderID = ${userId} AND m.RecipientID = cu.OtherUserId)
-          OR (m.RecipientID = ${userId} AND m.SenderID = cu.OtherUserId)
+        INNER JOIN "Messages" m ON (
+          (m."SenderID" = ${userId} AND m."RecipientID" = cu."OtherUserId")
+          OR (m."RecipientID" = ${userId} AND m."SenderID" = cu."OtherUserId")
         )
-        WHERE m.IsDeleted = 0
+        WHERE m."IsDeleted" = false
       ),
       UnreadCounts AS (
         SELECT
-          m.SenderID AS OtherUserId,
-          COUNT(*) as UnreadCount
-        FROM Messages m
-        WHERE m.RecipientID = ${userId}
-          AND m.IsReadByRecipient = 0
-          AND m.IsDeleted = 0
-        GROUP BY m.SenderID
+          m."SenderID" AS "OtherUserId",
+          COUNT(*) as "UnreadCount"
+        FROM "Messages" m
+        WHERE m."RecipientID" = ${userId}
+          AND m."IsReadByRecipient" = false
+          AND m."IsDeleted" = false
+        GROUP BY m."SenderID"
       )
       SELECT
-        u.UserID as userId,
-        u.FullName as fullName,
-        u.ProfilePictureURL as profilePictureUrl,
-        lm.MessageContent as lastMessage,
-        lm.CreatedAt as lastMessageAt,
-        lm.SenderID as lastMessageSenderId,
-        ISNULL(uc.UnreadCount, 0) as unreadCount,
-        lm.PostID as postId,
-        p.Title as postTitle
+        u."UserID" as "userId",
+        u."FullName" as "fullName",
+        u."ProfilePictureURL" as "profilePictureUrl",
+        lm."MessageContent" as "lastMessage",
+        lm."CreatedAt" as "lastMessageAt",
+        lm."SenderID" as "lastMessageSenderId",
+        COALESCE(uc."UnreadCount", 0) as "unreadCount",
+        lm."PostID" as "postId",
+        p."Title" as "postTitle"
       FROM LastMessages lm
-      INNER JOIN Users u ON u.UserID = lm.OtherUserId
-      LEFT JOIN UnreadCounts uc ON uc.OtherUserId = lm.OtherUserId
-      LEFT JOIN Posts p ON p.PostID = lm.PostID
+      INNER JOIN "Users" u ON u."UserID" = lm."OtherUserId"
+      LEFT JOIN UnreadCounts uc ON uc."OtherUserId" = lm."OtherUserId"
+      LEFT JOIN "Posts" p ON p."PostID" = lm."PostID"
       WHERE lm.rn = 1
-      ORDER BY lm.CreatedAt DESC
-      OFFSET ${offset} ROWS
-      FETCH NEXT ${limit} ROWS ONLY
+      ORDER BY lm."CreatedAt" DESC
+      OFFSET ${offset} LIMIT ${limit}
     `;
 
     // Convert bigint to number for unreadCount

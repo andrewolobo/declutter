@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlserver"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -16,22 +16,22 @@ datasource db {
 
 model User {
   id                Int       @id @default(autoincrement()) @map("UserID")
-  email             String    @unique @db.NVarChar(255) @map("Email")
-  phoneNumber       String    @db.NVarChar(20) @map("PhoneNumber")
-  paymentsNumber    String?   @db.NVarChar(20) @map("PaymentsNumber")
-  fullName          String    @db.NVarChar(255) @map("FullName")
-  passwordHash      String?   @db.NVarChar(255) @map("PasswordHash")
-  oauthProvider     String?   @db.NVarChar(50) @map("OAuthProvider")
-  oauthProviderId   String?   @db.NVarChar(255) @map("OAuthProviderId")
-  profilePictureUrl String?   @db.NVarChar(500) @map("ProfilePictureURL")
-  location          String?   @db.NVarChar(255) @map("Location")
-  bio               String?   @db.NVarChar(500) @map("Bio")
+  email             String    @unique @db.VarChar(255) @map("Email")
+  phoneNumber       String    @db.VarChar(20) @map("PhoneNumber")
+  paymentsNumber    String?   @db.VarChar(20) @map("PaymentsNumber")
+  fullName          String    @db.VarChar(255) @map("FullName")
+  passwordHash      String?   @db.VarChar(255) @map("PasswordHash")
+  oauthProvider     String?   @db.VarChar(50) @map("OAuthProvider")
+  oauthProviderId   String?   @db.VarChar(255) @map("OAuthProviderId")
+  profilePictureUrl String?   @db.VarChar(500) @map("ProfilePictureURL")
+  location          String?   @db.VarChar(255) @map("Location")
+  bio               String?   @db.VarChar(500) @map("Bio")
   isEmailVerified   Boolean   @default(false) @map("IsEmailVerified")
   isPhoneVerified   Boolean   @default(false) @map("IsPhoneVerified")
   isActive          Boolean   @default(true) @map("IsActive")
   isAdmin           Boolean   @default(false) @map("IsAdmin")
-  createdAt         DateTime  @default(now()) @map("CreatedAt") @db.DateTime2
-  updatedAt         DateTime  @updatedAt @map("UpdatedAt") @db.DateTime2
+  createdAt         DateTime  @default(now()) @map("CreatedAt") @db.Timestamp
+  updatedAt         DateTime  @updatedAt @map("UpdatedAt") @db.Timestamp
 
   // Relations (implicit - no FK constraints in DB)
   posts             Post[]
@@ -52,10 +52,10 @@ model User {
 
 model Category {
   id          Int      @id @default(autoincrement()) @map("CategoryID")
-  name        String   @db.NVarChar(100) @map("CategoryName")
-  description String?  @db.NVarChar(500) @map("Description")
-  iconUrl     String?  @db.NVarChar(500) @map("IconURL")
-  createdAt   DateTime @default(now()) @map("CreatedAt") @db.DateTime2
+  name        String   @db.VarChar(100) @map("CategoryName")
+  description String?  @db.VarChar(500) @map("Description")
+  iconUrl     String?  @db.VarChar(500) @map("IconURL")
+  createdAt   DateTime @default(now()) @map("CreatedAt") @db.Timestamp
 
   // Relations (implicit - no FK constraints in DB)
   posts       Post[]
@@ -66,27 +66,27 @@ model Category {
 model Post {
   id                   Int       @id @default(autoincrement()) @map("PostID")
   userId               Int       @map("UserID")
-  title                String    @db.NVarChar(255) @map("Title")
+  title                String    @db.VarChar(255) @map("Title")
   categoryId           Int       @map("CategoryID")
-  brand                String?   @db.NVarChar(100) @map("Brand")
-  description          String    @db.NVarChar(Max) @map("Description")
+  brand                String?   @db.VarChar(100) @map("Brand")
+  description          String    @db.Text @map("Description")
   price                Decimal   @db.Decimal(18, 2) @map("Price")
-  location             String    @db.NVarChar(255) @map("Location")
+  location             String    @db.VarChar(255) @map("Location")
   gpsLocation          String?   @map("GPSLocation") // geography type stored as string
-  deliveryMethod       String?   @db.NVarChar(100) @map("DeliveryMethod")
-  contactNumber        String    @db.NVarChar(20) @map("ContactNumber")
-  emailAddress         String?   @db.NVarChar(255) @map("EmailAddress")
-  status               String    @db.NVarChar(50) @map("Status")
-  scheduledPublishTime DateTime? @map("ScheduledPublishTime") @db.DateTime2
-  publishedAt          DateTime? @map("PublishedAt") @db.DateTime2
-  expiresAt            DateTime? @map("ExpiresAt") @db.DateTime2
+  deliveryMethod       String?   @db.VarChar(100) @map("DeliveryMethod")
+  contactNumber        String    @db.VarChar(20) @map("ContactNumber")
+  emailAddress         String?   @db.VarChar(255) @map("EmailAddress")
+  status               String    @db.VarChar(50) @map("Status")
+  scheduledPublishTime DateTime? @map("ScheduledPublishTime") @db.Timestamp
+  publishedAt          DateTime? @map("PublishedAt") @db.Timestamp
+  expiresAt            DateTime? @map("ExpiresAt") @db.Timestamp
   viewCount            Int       @default(0) @map("ViewCount")
   likeCount            Int       @default(0) @map("LikeCount")
   pricingTierId        Int?      @map("Tier")
-  instagramPostId      String?   @db.NVarChar(255) @map("InstagramPostID")
-  instagramPostedAt    DateTime? @map("InstagramPostedAt") @db.DateTime2
-  createdAt            DateTime  @default(now()) @map("CreatedAt") @db.DateTime2
-  updatedAt            DateTime  @updatedAt @map("UpdatedAt") @db.DateTime2
+  instagramPostId      String?   @db.VarChar(255) @map("InstagramPostID")
+  instagramPostedAt    DateTime? @map("InstagramPostedAt") @db.Timestamp
+  createdAt            DateTime  @default(now()) @map("CreatedAt") @db.Timestamp
+  updatedAt            DateTime  @updatedAt @map("UpdatedAt") @db.Timestamp
 
   // Relations (implicit - no FK constraints in DB)
   user                 User         @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -108,9 +108,9 @@ model Post {
 model PostImage {
   id           Int      @id @default(autoincrement()) @map("ImageID")
   postId       Int      @map("PostID")
-  imageUrl     String   @db.NVarChar(500) @map("ImageURL")
+  imageUrl     String   @db.VarChar(500) @map("ImageURL")
   displayOrder Int      @default(0) @map("DisplayOrder")
-  createdAt    DateTime @default(now()) @map("CreatedAt") @db.DateTime2
+  createdAt    DateTime @default(now()) @map("CreatedAt") @db.Timestamp
 
   // Relations (implicit - no FK constraints in DB)
   post         Post     @relation(fields: [postId], references: [id], onDelete: Cascade, onUpdate: NoAction)
@@ -122,7 +122,7 @@ model Like {
   id        Int      @id @default(autoincrement()) @map("LikeID")
   postId    Int      @map("PostID")
   userId    Int      @map("UserID")
-  createdAt DateTime @default(now()) @map("CreatedAt") @db.DateTime2
+  createdAt DateTime @default(now()) @map("CreatedAt") @db.Timestamp
 
   // Relations (implicit - no FK constraints in DB)
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade, onUpdate: NoAction)
@@ -143,25 +143,25 @@ model Message {
   senderId       Int       @map("SenderID")
   recipientId    Int       @map("RecipientID")
   postId         Int?      @map("PostID")
-  content        String    @db.NVarChar(Max) @map("MessageContent")
-  messageType    String    @default("text") @db.NVarChar(20) @map("MessageType")
-  attachmentUrl  String?   @db.NVarChar(500) @map("AttachmentURL")
+  content        String    @db.Text @map("MessageContent")
+  messageType    String    @default("text") @db.VarChar(20) @map("MessageType")
+  attachmentUrl  String?   @db.VarChar(500) @map("AttachmentURL")
   // Recipient read status (has the recipient read this message?)
   isReadByRecipient Boolean   @default(false) @map("IsReadByRecipient")
-  recipientReadAt   DateTime? @map("RecipientReadAt") @db.DateTime2
+  recipientReadAt   DateTime? @map("RecipientReadAt") @db.Timestamp
   // Sender read status (has the sender seen/acknowledged the conversation since sending?)
   isReadBySender    Boolean   @default(true) @map("IsReadBySender")
-  senderReadAt      DateTime? @map("SenderReadAt") @db.DateTime2
+  senderReadAt      DateTime? @map("SenderReadAt") @db.Timestamp
   // Legacy field kept for backward compatibility (maps to isReadByRecipient behavior)
   isRead         Boolean   @default(false) @map("IsRead")
-  readAt         DateTime? @map("ReadAt") @db.DateTime2
+  readAt         DateTime? @map("ReadAt") @db.Timestamp
   isDeleted      Boolean   @default(false) @map("IsDeleted")
   deletedBy      Int?      @map("DeletedBy")
   isEdited       Boolean   @default(false) @map("IsEdited")
-  editedAt       DateTime? @map("EditedAt") @db.DateTime2
+  editedAt       DateTime? @map("EditedAt") @db.Timestamp
   parentMessageId Int?     @map("ParentMessageID")
-  createdAt      DateTime  @default(now()) @map("CreatedAt") @db.DateTime2
-  updatedAt      DateTime  @updatedAt @map("UpdatedAt") @db.DateTime2
+  createdAt      DateTime  @default(now()) @map("CreatedAt") @db.Timestamp
+  updatedAt      DateTime  @updatedAt @map("UpdatedAt") @db.Timestamp
 
   // Relations (implicit - no FK constraints in DB)
   sender         User      @relation("SentMessages", fields: [senderId], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -187,12 +187,12 @@ model Payment {
   postId               Int       @map("PostID")
   userId               Int       @map("UserID")
   amount               Decimal   @db.Decimal(18, 2) @map("Amount")
-  currency             String    @default("UGX") @db.NVarChar(3) @map("Currency")
-  paymentMethod        String    @db.NVarChar(50) @map("PaymentMethod")
-  transactionReference String?   @db.NVarChar(255) @map("TransactionReference")
-  status               String    @db.NVarChar(50) @map("Status")
-  confirmedAt          DateTime? @map("ConfirmedAt") @db.DateTime2
-  createdAt            DateTime  @default(now()) @map("CreatedAt") @db.DateTime2
+  currency             String    @default("UGX") @db.VarChar(3) @map("Currency")
+  paymentMethod        String    @db.VarChar(50) @map("PaymentMethod")
+  transactionReference String?   @db.VarChar(255) @map("TransactionReference")
+  status               String    @db.VarChar(50) @map("Status")
+  confirmedAt          DateTime? @map("ConfirmedAt") @db.Timestamp
+  createdAt            DateTime  @default(now()) @map("CreatedAt") @db.Timestamp
 
   // Relations (implicit - no FK constraints in DB)
   post                 Post      @relation(fields: [postId], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -203,12 +203,12 @@ model Payment {
 
 model PricingTier {
   id             Int      @id @default(autoincrement()) @map("TierID")
-  name           String   @db.NVarChar(100) @map("TierName")
+  name           String   @unique @db.VarChar(100) @map("TierName")
   visibilityDays Int      @map("VisibilityDays")
   price          Decimal  @db.Decimal(18, 2) @map("Price")
-  description    String?  @db.NVarChar(500) @map("Description")
+  description    String?  @db.VarChar(500) @map("Description")
   isActive       Boolean  @default(true) @map("IsActive")
-  createdAt      DateTime @default(now()) @map("CreatedAt") @db.DateTime2
+  createdAt      DateTime @default(now()) @map("CreatedAt") @db.Timestamp
 
   // Relations (implicit - no FK constraints in DB)
   posts          Post[]
@@ -224,13 +224,13 @@ model View {
   id           Int      @id @default(autoincrement()) @map("ViewID")
   postId       Int      @map("PostID")
   userId       Int?     @map("UserID")
-  ipAddress    String?  @db.NVarChar(45) @map("IPAddress")
-  userAgent    String?  @db.NVarChar(500) @map("UserAgent")
-  referrerUrl  String?  @db.NVarChar(500) @map("ReferrerURL")
-  sessionId    String?  @db.NVarChar(100) @map("SessionID")
+  ipAddress    String?  @db.VarChar(45) @map("IPAddress")
+  userAgent    String?  @db.VarChar(500) @map("UserAgent")
+  referrerUrl  String?  @db.VarChar(500) @map("ReferrerURL")
+  sessionId    String?  @db.VarChar(100) @map("SessionID")
   viewDuration Int?     @map("ViewDuration")
   isUnique     Boolean  @default(true) @map("IsUnique")
-  createdAt    DateTime @default(now()) @map("CreatedAt") @db.DateTime2
+  createdAt    DateTime @default(now()) @map("CreatedAt") @db.Timestamp
 
   // Relations (implicit - no FK constraints in DB)
   post         Post     @relation(fields: [postId], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -254,8 +254,8 @@ model ViewAnalytics {
   authenticatedViews   Int      @default(0) @map("AuthenticatedViews")
   anonymousViews       Int      @default(0) @map("AnonymousViews")
   averageViewDuration  Int?     @map("AverageViewDuration")
-  createdAt            DateTime @default(now()) @map("CreatedAt") @db.DateTime2
-  updatedAt            DateTime @updatedAt @map("UpdatedAt") @db.DateTime2
+  createdAt            DateTime @default(now()) @map("CreatedAt") @db.Timestamp
+  updatedAt            DateTime @updatedAt @map("UpdatedAt") @db.Timestamp
 
   // Relations (implicit - no FK constraints in DB)
   post                 Post     @relation(fields: [postId], references: [id], onDelete: NoAction, onUpdate: NoAction)
