@@ -33,6 +33,11 @@ model User {
   createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz
 
+  // Rating aggregate fields (denormalized for performance)
+  sellerRating      Decimal?  @default(0) @db.Decimal(3, 2) @map("seller_rating")
+  totalRatings      Int       @default(0) @map("total_ratings")
+  positiveRatings   Int       @default(0) @map("positive_ratings")
+
   // Relations
   posts             Post[]
   likes             Like[]
@@ -40,6 +45,8 @@ model User {
   sentMessages      Message[] @relation("SentMessages")
   receivedMessages  Message[] @relation("ReceivedMessages")
   views             View[]
+  ratingsReceived   SellerRating[] @relation("RatingsReceived")
+  ratingsGiven      SellerRating[] @relation("RatingsGiven")
 
   @@index([email], map: "ix_users_email")
   @@index([phoneNumber], map: "ix_users_phone_number")
@@ -98,6 +105,7 @@ model Post {
   messages             Message[]
   views                View[]
   analytics            ViewAnalytics[]
+  ratings              SellerRating[]
 
   @@index([status, publishedAt(sort: Desc)], map: "ix_posts_status_published_at")
   @@index([categoryId], map: "ix_posts_category_id")
@@ -146,6 +154,13 @@ model Message {
   content         String    @db.Text @map("message_content")
   messageType     String    @default("text") @db.VarChar(20) @map("message_type")
   attachmentUrl   String?   @db.VarChar(500) @map("attachment_url")
+  // Recipient read status (has the recipient read this message?)
+  isReadByRecipient Boolean   @default(false) @map("is_read_by_recipient")
+  recipientReadAt   DateTime? @map("recipient_read_at") @db.Timestamptz
+  // Sender read status (has the sender seen/acknowledged the conversation since sending?)
+  isReadBySender    Boolean   @default(true) @map("is_read_by_sender")
+  senderReadAt      DateTime? @map("sender_read_at") @db.Timestamptz
+  // Legacy field kept for backward compatibility (maps to isReadByRecipient behavior)
   isRead          Boolean   @default(false) @map("is_read")
   readAt          DateTime? @map("read_at") @db.Timestamptz
   isDeleted       Boolean   @default(false) @map("is_deleted")
@@ -252,4 +267,30 @@ model ViewAnalytics {
   @@index([postId], map: "ix_view_analytics_post_id")
   @@index([date(sort: Desc)], map: "ix_view_analytics_date")
   @@map("view_analytics")
+}
+
+// ============================================
+// Seller Rating System
+// ============================================
+
+model SellerRating {
+  id        Int      @id @default(autoincrement()) @map("rating_id")
+  sellerId  Int      @map("seller_id")
+  raterId   Int      @map("rater_id")
+  postId    Int?     @map("post_id")
+  rating    Int      @map("rating") // 1-5 scale
+  comment   String?  @db.Text @map("comment")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  seller    User     @relation("RatingsReceived", fields: [sellerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  rater     User     @relation("RatingsGiven", fields: [raterId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  post      Post?    @relation(fields: [postId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([sellerId, raterId, postId], map: "uq_seller_ratings_seller_rater_post")
+  @@index([sellerId], map: "ix_seller_ratings_seller_id")
+  @@index([raterId], map: "ix_seller_ratings_rater_id")
+  @@index([postId], map: "ix_seller_ratings_post_id")
+  @@map("seller_ratings")
 }

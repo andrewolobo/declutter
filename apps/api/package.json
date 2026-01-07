@@ -14,9 +14,12 @@
     "dev:watch": "nodemon --watch src --exec ts-node src/server.ts",
     "start": "node dist/server.js",
     "clean": "rm -rf dist coverage node_modules",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio"
+    "prisma:generate": "prisma generate --schema=prisma/schema.postgres.prisma",
+    "prisma:migrate": "prisma migrate dev --schema=prisma/schema.postgres.prisma",
+    "prisma:studio": "prisma studio --schema=prisma/schema.postgres.prisma",
+    "prisma:generate:sqlserver": "prisma generate --schema=prisma/schema.prisma",
+    "prisma:migrate:sqlserver": "prisma migrate dev --schema=prisma/schema.prisma",
+    "prisma:studio:sqlserver": "prisma studio --schema=prisma/schema.prisma"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
