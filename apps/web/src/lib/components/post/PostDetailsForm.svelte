@@ -31,7 +31,7 @@
 	const deliveryMethods = [
 		{ value: 'PICKUP', label: 'Pickup Only' },
 		{ value: 'DELIVERY', label: 'Delivery Available' },
-		{ value: 'BOTH', label: 'Pickup & Delivery' },
+		{ value: 'BOTH', label: 'Pickup or Delivery' },
 		{ value: 'SHIPPING', label: 'Shipping' }
 	];
 
@@ -179,7 +179,7 @@
 		</label>
 		<div class="relative">
 			<span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400">
-				TZS
+				Ush
 			</span>
 			<input
 				type="text"
@@ -198,7 +198,7 @@
 			<p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.price}</p>
 		{:else}
 			<p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-				Enter the price in Tanzanian Shillings
+				Enter the price in Uganda Shillings
 			</p>
 		{/if}
 	</div>
@@ -212,7 +212,7 @@
 			type="text"
 			id="location"
 			bind:value={formData.location}
-			placeholder="e.g., Dar es Salaam, Kinondoni"
+			placeholder="e.g., Kiwatule, Kampala"
 			class="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-600
 				bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100
 				placeholder:text-slate-400 dark:placeholder:text-slate-500
@@ -239,7 +239,7 @@
 			id="contactNumber"
 			value={formData.contactNumber}
 			oninput={handlePhoneInput}
-			placeholder="255712345678"
+			placeholder="256781000111"
 			maxlength="15"
 			class="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-600
 				bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100
@@ -251,7 +251,7 @@
 			<p class="mt-1 text-sm text-red-600 dark:text-red-400">{errors.contactNumber}</p>
 		{:else}
 			<p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-				Include country code (e.g., 255 for Tanzania)
+				Include country code (e.g., 256 for Uganda)
 			</p>
 		{/if}
 	</div>

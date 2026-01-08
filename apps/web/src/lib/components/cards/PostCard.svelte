@@ -1,24 +1,6 @@
-<script lang="ts" module>
-	export interface Post {
-		id: string;
-		title: string;
-		description: string;
-		price: number;
-		images: string[];
-		status: 'active' | 'expired' | 'pending';
-		location: string;
-		createdAt: Date;
-		likesCount: number;
-		liked: boolean;
-		user: {
-			id: string;
-			name: string;
-			avatar?: string;
-		};
-	}
-</script>
-
 <script lang="ts">
+	import type { PostResponseDTO } from '$types/post.types';
+	import { PostStatus } from '$types/post.types';
 	import Icon from '$lib/components/ui/Icon.svelte';
 	import Avatar from '$lib/components/media/Avatar.svelte';
 	import Badge from '$lib/components/media/Badge.svelte';
@@ -27,11 +9,9 @@
 	import DropdownMenu, { type MenuItem } from '$lib/components/buttons/DropdownMenu.svelte';
 
 	interface Props {
-		post: Post;
+		post: PostResponseDTO;
 		variant?: 'feed' | 'grid' | 'list';
 		showUser?: boolean;
-		liked?: boolean;
-		likesCount?: number;
 		onLike?: () => void;
 		onClick?: () => void;
 		onEdit?: () => void;
@@ -42,17 +22,22 @@
 		post,
 		variant = 'feed',
 		showUser = true,
-		liked = $bindable(post.liked),
-		likesCount = $bindable(post.likesCount),
 		onLike,
 		onClick,
 		onEdit,
 		onDelete
 	}: Props = $props();
 
+	// Map API fields to display format
+	const userName = $derived(post.user.fullName);
+	const userAvatar = $derived(post.user.profilePictureUrl);
+	const imageUrls = $derived(post.images.map((img) => img.imageUrl));
+	
+	// Derive like state from post (reactive to store updates)
+	const liked = $derived(post.isLiked ?? false);
+	const likesCount = $derived(post.likeCount);
+
 	const handleLike = () => {
-		liked = !liked;
-		likesCount += liked ? 1 : -1;
 		onLike?.();
 	};
 
@@ -71,12 +56,17 @@
 	});
 
 	const statusColor = $derived(
-		post.status === 'active' ? 'success' : post.status === 'expired' ? 'danger' : 'warning'
+		post.status === PostStatus.ACTIVE
+			? 'success'
+			: post.status === PostStatus.EXPIRED
+				? 'danger'
+				: 'warning'
 	);
 
-	const formatDate = (date: Date) => {
+	const formatDate = (date: Date | string) => {
 		const now = new Date();
-		const diff = now.getTime() - date.getTime();
+		const dateObj = typeof date === 'string' ? new Date(date) : date;
+		const diff = now.getTime() - dateObj.getTime();
 		const minutes = Math.floor(diff / 60000);
 		const hours = Math.floor(diff / 3600000);
 		const days = Math.floor(diff / 86400000);
@@ -85,7 +75,7 @@
 		if (minutes < 60) return `${minutes}m ago`;
 		if (hours < 24) return `${hours}h ago`;
 		if (days < 7) return `${days}d ago`;
-		return date.toLocaleDateString();
+		return dateObj.toLocaleDateString();
 	};
 
 	const formatPrice = (price: number) => {
@@ -122,8 +112,8 @@
 >
 	<!-- Image Section -->
 	<div class={imageContainerClasses}>
-		{#if post.images.length > 0}
-			<ImageCarousel images={post.images} showThumbnails={false} autoPlay={false} />
+		{#if imageUrls.length > 0}
+			<ImageCarousel images={imageUrls} showThumbnails={false} autoPlay={false} />
 		{:else}
 			<div
 				class="w-full h-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center"
@@ -140,8 +130,8 @@
 			<div class="flex items-center justify-between mb-3">
 				<div class="flex items-center gap-2">
 					<Avatar
-						src={post.user.avatar}
-						alt={post.user.name}
+						src={userAvatar}
+						alt={userName}
 						size="sm"
 						onclick={() => {
 							/* Navigate to user profile */
@@ -149,7 +139,7 @@
 					/>
 					<div class="flex flex-col">
 						<span class="text-sm font-semibold text-slate-900 dark:text-white">
-							{post.user.name}
+							{userName}
 						</span>
 						<span class="text-xs text-slate-500 dark:text-slate-400">
 							{formatDate(post.createdAt)}

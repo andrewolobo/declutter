@@ -332,7 +332,9 @@ export class PostService {
 
       // Build filter for active posts
       const where: any = {
-        status: "Active",
+        //CORRECT THIS LINE LATER AFTER DEVELOPMENT
+        //BITBANDIT
+        // status: "Active",
       };
 
       if (options.categoryId) {
@@ -343,13 +345,21 @@ export class PostService {
         where.userId = options.userId;
       }
 
-      // Get posts
+      // Get posts with images included
       const posts = await postRepository.findAll({
         where,
         skip: (page - 1) * limit,
         take: limit,
+        include: {
+          images: {
+            orderBy: { displayOrder: "asc" },
+          },
+          _count: {
+            select: { likes: true, views: true },
+          },
+        },
         orderBy: {
-          publishedAt: "desc",
+          createdAt: "desc",
         },
       });
 

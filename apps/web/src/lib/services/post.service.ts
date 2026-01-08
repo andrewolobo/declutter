@@ -138,7 +138,7 @@ export async function deletePost(postId: number): Promise<ApiResponse<void>> {
  */
 export async function getFeed(
 	options: FeedOptionsDTO = {}
-): Promise<ApiResponse<PaginatedResponse<PostResponseDTO>>> {
+): Promise<PaginatedResponse<PostResponseDTO>> {
 	try {
 		const { page = 1, limit = 20, categoryId, userId } = options;
 
@@ -151,12 +151,12 @@ export async function getFeed(
 		if (userId) params.append('userId', userId.toString());
 
 		postStore.setFeedLoading(true);
-		const response = await apiClient.get<ApiResponse<PaginatedResponse<PostResponseDTO>>>(
+		const response = await apiClient.get<PaginatedResponse<PostResponseDTO>>(
 			`/posts/feed?${params.toString()}`
 		);
 
 		if (response.data.success && response.data.data) {
-			const { data: posts, pagination } = response.data.data;
+			const { data: posts, pagination } = response.data;
 			const hasMore = pagination.page < pagination.pages;
 
 			if (page === 1) {
@@ -183,7 +183,7 @@ export async function getFeed(
  */
 export async function searchPosts(
 	options: SearchOptionsDTO
-): Promise<ApiResponse<PaginatedResponse<PostResponseDTO>>> {
+): Promise<PaginatedResponse<PostResponseDTO>> {
 	try {
 		const { query, page = 1, limit = 20, categoryId, minPrice, maxPrice, location, sort } = options;
 
@@ -201,12 +201,12 @@ export async function searchPosts(
 		if (sort?.order) params.append('sortOrder', sort.order);
 
 		postStore.setSearchLoading(true);
-		const response = await apiClient.get<ApiResponse<PaginatedResponse<PostResponseDTO>>>(
+		const response = await apiClient.get<PaginatedResponse<PostResponseDTO>>(
 			`/posts/search?${params.toString()}`
 		);
 
 		if (response.data.success && response.data.data) {
-			const { data: posts, pagination } = response.data.data;
+			const { data: posts, pagination } = response.data;
 			const hasMore = pagination.page < pagination.pages;
 
 			if (page === 1) {
@@ -233,7 +233,7 @@ export async function searchPosts(
 export async function getPostsByCategory(
 	categoryId: number,
 	options: { page?: number; limit?: number } = {}
-): Promise<ApiResponse<PaginatedResponse<PostResponseDTO>>> {
+): Promise<PaginatedResponse<PostResponseDTO>> {
 	return getFeed({ ...options, categoryId });
 }
 
@@ -243,7 +243,7 @@ export async function getPostsByCategory(
 export async function getPostsByUser(
 	userId: number,
 	options: { page?: number; limit?: number } = {}
-): Promise<ApiResponse<PaginatedResponse<PostResponseDTO>>> {
+): Promise<PaginatedResponse<PostResponseDTO>> {
 	return getFeed({ ...options, userId });
 }
 

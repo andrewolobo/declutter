@@ -87,9 +87,9 @@
 	};
 
 	const formatPrice = (price: number) => {
-		return new Intl.NumberFormat('en-JM', {
+		return new Intl.NumberFormat('en-UG', {
 			style: 'currency',
-			currency: 'JMD',
+			currency: 'UGX',
 			minimumFractionDigits: 0
 		}).format(price);
 	};

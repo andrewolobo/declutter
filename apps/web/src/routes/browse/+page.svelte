@@ -1,114 +1,74 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import Sidebar from '$lib/components/layout/Sidebar.svelte';
 	import MobileBottomNav from '$lib/components/layout/MobileBottomNav.svelte';
-	import PostCard, { type Post } from '$lib/components/cards/PostCard.svelte';
+	import PostCard from '$lib/components/cards/PostCard.svelte';
+	import type { PostResponseDTO } from '$types/post.types';
+	import { postStore } from '$lib/stores/post.store';
+	import { getFeed, likePost, unlikePost } from '$lib/services/post.service';
 
-	// Mock data for feed listings
-	const mockPosts: Post[] = [
-		{
-			id: '1',
-			title: 'Mid-Century Modern Armchair',
-			description:
-				'Vintage armchair in great condition. Minor scuffs on the left leg. Perfect for a reading nook...',
-			price: 250000,
-			images: [
-				'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800',
-				'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=800',
-				'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800'
-			],
-			status: 'active' as const,
-			location: 'San Francisco, CA',
-			createdAt: new Date('2025-01-01'),
-			likesCount: 12,
-			liked: false,
-			user: {
-				id: '1',
-				name: 'jane.doe',
-				avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=jane'
+	// Reactive store values
+	const feedPosts = $derived($postStore.feedPosts);
+	const isLoading = $derived($postStore.feedLoading);
+	const hasMore = $derived($postStore.feedHasMore);
+	const error = $derived($postStore.feedError);
+
+	// Infinite scroll state
+	let currentPage = $state(1);
+	let loadMoreTrigger = $state<HTMLElement | undefined>();
+	let observer: IntersectionObserver;
+
+	// Load more posts function
+	async function loadMore() {
+		if (isLoading || !hasMore) return;
+		currentPage += 1;
+		await getFeed({ page: currentPage, limit: 20 });
+	}
+
+	// Handle like/unlike for a post
+	async function handleLike(post: PostResponseDTO) {
+		try {
+			if (post.isLiked) {
+				await unlikePost(post.id);
+			} else {
+				await likePost(post.id);
 			}
-		},
-		{
-			id: '2',
-			title: 'Vintage Wooden Bookshelf',
-			description: 'Solid oak bookshelf, 5 shelves. Perfect for any living space or office.',
-			price: 150000,
-			images: [
-				'https://images.unsplash.com/photo-1594620302200-9a762244a156?w=800',
-				'https://images.unsplash.com/photo-1507032760419-81c77ead6f87?w=800'
-			],
-			status: 'active' as const,
-			location: 'New York, NY',
-			createdAt: new Date('2025-01-02'),
-			likesCount: 8,
-			liked: true,
-			user: {
-				id: '2',
-				name: 'john.smith',
-				avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=john'
-			}
-		},
-		{
-			id: '3',
-			title: 'Designer Floor Lamp',
-			description: 'Sleek, minimalist floor lamp with a warm LED bulb. Adds a modern touch.',
-			price: 85000,
-			images: [
-				'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=800',
-				'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=800',
-				'https://images.unsplash.com/photo-1524532326935-09ff8e90317f?w=800',
-				'https://images.unsplash.com/photo-1535231540604-72e8fbaf8cdb?w=800'
-			],
-			status: 'active' as const,
-			location: 'Chicago, IL',
-			createdAt: new Date('2025-01-03'),
-			likesCount: 24,
-			liked: false,
-			user: {
-				id: '3',
-				name: 'sarah_p',
-				avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sarah'
-			}
-		},
-		{
-			id: '4',
-			title: 'Dining Table Set',
-			description: 'Modern dining table with 4 chairs. Excellent condition, barely used.',
-			price: 450000,
-			images: ['https://images.unsplash.com/photo-1617806118233-18e1de247200?w=800'],
-			status: 'active' as const,
-			location: 'Austin, TX',
-			createdAt: new Date('2024-12-28'),
-			likesCount: 15,
-			liked: false,
-			user: {
-				id: '4',
-				name: 'mike_r',
-				avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=mike'
-			}
-		},
-		{
-			id: '5',
-			title: 'Vintage Rug - Persian Style',
-			description: 'Beautiful hand-woven rug with intricate patterns. Adds warmth to any room.',
-			price: 320000,
-			images: [
-				'https://images.unsplash.com/photo-1600166898405-da9535204843?w=800',
-				'https://images.unsplash.com/photo-1610160981843-e36d4e70d0ba?w=800'
-			],
-			status: 'active' as const,
-			location: 'Seattle, WA',
-			createdAt: new Date('2024-12-30'),
-			likesCount: 18,
-			liked: false,
-			user: {
-				id: '5',
-				name: 'emily_w',
-				avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=emily'
-			}
+		} catch (error) {
+			console.error('Failed to toggle like:', error);
 		}
-	];
+	}
 
-	let posts = mockPosts;
+	// Load initial feed data and setup infinite scroll
+	onMount(() => {
+		// Reset feed state and load first page
+		postStore.resetFeed();
+		currentPage = 1;
+		getFeed({ page: 1, limit: 20 });
+
+		// Setup infinite scroll observer
+		observer = new IntersectionObserver(
+			(entries) => {
+				const [entry] = entries;
+				if (entry.isIntersecting && !isLoading && hasMore) {
+					loadMore();
+				}
+			},
+			{
+				rootMargin: '100px', // Trigger 100px before element
+				threshold: 0.1
+			}
+		);
+
+		if (loadMoreTrigger) {
+			observer.observe(loadMoreTrigger);
+		}
+
+		// Cleanup
+		return () => {
+			observer?.disconnect();
+		};
+	});
+
 	let activeTab = 'home';
 </script>
 
@@ -147,9 +107,54 @@
 		<!-- Main Content Feed -->
 		<main class="flex-1 overflow-y-auto pb-24 md:pb-0 pt-20 md:pt-0">
 			<div class="flex flex-col gap-[5px] max-w-2xl mx-auto">
-				{#each posts as post (post.id)}
-					<PostCard {post} variant="feed" showUser={true} />
-				{/each}
+				{#if isLoading && feedPosts.length === 0}
+					<!-- Loading skeleton for initial load -->
+					<div class="space-y-[5px] p-4">
+						{#each Array(3) as _}
+							<div class="animate-pulse bg-base-200 rounded-xl h-[500px]"></div>
+						{/each}
+					</div>
+				{:else if error}
+					<!-- Error state -->
+					<div class="flex flex-col items-center justify-center py-12 px-4">
+						<div class="text-error text-xl mb-4">Failed to load posts</div>
+						<p class="text-base-content/60 mb-4 text-center">{error}</p>
+						<button
+							class="btn btn-primary"
+							onclick={() => {
+								postStore.resetFeed();
+								getFeed({ page: 1, limit: 20 });
+							}}
+						>
+							Try Again
+						</button>
+					</div>
+				{:else if feedPosts.length === 0}
+					<!-- Empty state -->
+					<div class="flex flex-col items-center justify-center py-12 px-4">
+						<div class="text-2xl mb-4">No posts found</div>
+						<p class="text-base-content/60">Check back later for new listings</p>
+					</div>
+				{:else}
+					<!-- Feed posts -->
+					{#each feedPosts as post (post.id)}
+						<PostCard {post} variant="feed" showUser={true} onLike={() => handleLike(post)} />
+					{/each}
+
+					<!-- Infinite scroll trigger -->
+					{#if hasMore}
+						<div bind:this={loadMoreTrigger} class="flex justify-center items-center py-8">
+							{#if isLoading}
+								<div class="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+									<div
+										class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 dark:border-primary-400"
+									></div>
+									<span class="text-sm font-medium">Loading more posts...</span>
+								</div>
+							{/if}
+						</div>
+					{/if}
+				{/if}
 			</div>
 		</main>
 

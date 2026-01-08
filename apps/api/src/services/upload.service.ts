@@ -477,6 +477,30 @@ export class UploadService {
   }
 
   /**
+   * Check if a URL is from Azure Blob Storage
+   * @param url - The URL to check
+   * @returns true if the URL is from Azure Blob Storage, false for external URLs
+   */
+  private isAzureBlobUrl(url: string): boolean {
+    if (!url) return false;
+
+    // Blob paths (no protocol) are Azure blobs
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      return true;
+    }
+
+    // Check if URL is from Azure Blob Storage domain
+    try {
+      const urlObj = new URL(url);
+      const azureBlobDomain = `${azureConfig.blobStorageAccount}.blob.core.windows.net`;
+      return urlObj.hostname === azureBlobDomain;
+    } catch {
+      // Invalid URLs should not be transformed
+      return false;
+    }
+  }
+
+  /**
    * Extract blob name from a full Azure blob URL
    * @param blobUrl - Full URL or blob path
    * @returns Blob name/path
@@ -528,7 +552,9 @@ export class UploadService {
 
     return images.map((img) => ({
       ...img,
-      imageUrl: this.generateDynamicSasUrl(img.imageUrl, expiryMinutes),
+      imageUrl: this.isAzureBlobUrl(img.imageUrl)
+        ? this.generateDynamicSasUrl(img.imageUrl, expiryMinutes)
+        : img.imageUrl, // Return unchanged for external URLs
     }));
   }
 
@@ -546,6 +572,11 @@ export class UploadService {
 
     // If no profile picture, return as-is
     if (!user.profilePictureUrl) return user;
+
+    // Only transform Azure Blob Storage URLs, skip external URLs (e.g., Dicebear)
+    if (!this.isAzureBlobUrl(user.profilePictureUrl)) {
+      return user; // Return unchanged for external URLs
+    }
 
     return {
       ...user,
