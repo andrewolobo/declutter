@@ -85,7 +85,7 @@
 		<!-- Logo -->
 		<div class="flex justify-center pt-8 pb-6">
 			<div class="flex-1 flex justify-center">
-				<img src="/images/tunda-hub-logo.fw.png" alt="Tunda Plug" class="h-8 object-contain" />
+				<img src="/images/tunda-hub-logo.fw.png" alt="Tunda Plug" class="h-14 object-contain" />
 			</div>
 		</div>
 

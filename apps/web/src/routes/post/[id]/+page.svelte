@@ -20,6 +20,7 @@
 	let currentImageIndex = $state(0);
 	let showContactInfo = $state(false);
 	let isLiking = $state(false);
+	let profileImageError = $state(false);
 	
 	// Check if current user is the post owner
 	let isOwner = $derived(post && $currentUser && post.user.id === $currentUser.id);
@@ -28,6 +29,8 @@
 	$effect(() => {
 		const postId = parseInt($page.params.id);
 		if (!isNaN(postId)) {
+			// Reset profile image error state when loading a new post
+			profileImageError = false;
 			loadPost(postId);
 		} else {
 			error = 'Invalid post ID';
@@ -453,19 +456,15 @@
 					</h3>
 
 					<div class="flex items-center gap-3 mb-4">
-						{#if post.user.profilePictureUrl}
+						{#if post.user.profilePictureUrl && !profileImageError}
 							<img
 								src={post.user.profilePictureUrl}
 								alt={post.user.fullName}
 								class="w-12 h-12 rounded-full object-cover bg-slate-200 dark:bg-slate-700"
-								onerror={(e) => {
-									e.currentTarget.style.display = 'none';
-									e.currentTarget.nextElementSibling?.classList.remove('hidden');
+								onerror={() => {
+									profileImageError = true;
 								}}
 							/>
-							<div class="hidden w-12 h-12 rounded-full bg-[#13ecec]/20 flex items-center justify-center">
-								<Icon name="person" size={24} />
-							</div>
 						{:else}
 							<div class="w-12 h-12 rounded-full bg-[#13ecec]/20 flex items-center justify-center">
 								<Icon name="person" size={24} />

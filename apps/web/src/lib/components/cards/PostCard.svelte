@@ -7,6 +7,7 @@
 	import ImageCarousel from '$lib/components/media/ImageCarousel.svelte';
 	import LikeButton from '$lib/components/buttons/LikeButton.svelte';
 	import DropdownMenu, { type MenuItem } from '$lib/components/buttons/DropdownMenu.svelte';
+	import { userStore } from '$lib/stores/user.store';
 
 	interface Props {
 		post: PostResponseDTO;
@@ -16,6 +17,7 @@
 		onClick?: () => void;
 		onEdit?: () => void;
 		onDelete?: () => void;
+		onMessage?: () => void;
 	}
 
 	let {
@@ -25,7 +27,8 @@
 		onLike,
 		onClick,
 		onEdit,
-		onDelete
+		onDelete,
+		onMessage
 	}: Props = $props();
 
 	// Map API fields to display format
@@ -36,6 +39,9 @@
 	// Derive like state from post (reactive to store updates)
 	const liked = $derived(post.isLiked ?? false);
 	const likesCount = $derived(post.likeCount);
+	
+	// Check if user is authenticated
+	const isAuthenticated = $derived(userStore.isAuthenticated());
 
 	const handleLike = () => {
 		onLike?.();
@@ -189,19 +195,22 @@
 
 		<!-- Actions -->
 		<div class="flex items-center gap-4 pt-3 border-t border-slate-200 dark:border-slate-700">
-			<LikeButton {liked} count={likesCount} onToggle={handleLike} />
+			
+				<LikeButton {liked} count={likesCount} onToggle={handleLike} />
+				{#if isAuthenticated}
+				<button
+					class="flex items-center gap-1 text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+					onclick={(e) => {
+						e.stopPropagation();
+						onMessage?.();
+					}}
+				>
+					<Icon name="chat_bubble_outline" size={20} />
+					<span class="text-sm font-medium">Message</span>
+				</button>
+			{/if}
 			<button
-				class="flex items-center gap-1 text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-				onclick={(e) => {
-					e.stopPropagation();
-					// Handle message action
-				}}
-			>
-				<Icon name="chat_bubble_outline" size={20} />
-				<span class="text-sm font-medium">Message</span>
-			</button>
-			<button
-				class="flex items-center gap-1 text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors ml-auto"
+				class="flex items-center gap-1 text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors {isAuthenticated ? 'ml-auto' : ''}"
 				onclick={(e) => {
 					e.stopPropagation();
 					// Handle share action

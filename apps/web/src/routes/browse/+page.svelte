@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 	import Sidebar from '$lib/components/layout/Sidebar.svelte';
 	import MobileBottomNav from '$lib/components/layout/MobileBottomNav.svelte';
 	import PostCard from '$lib/components/cards/PostCard.svelte';
@@ -35,6 +36,14 @@
 			}
 		} catch (error) {
 			console.error('Failed to toggle like:', error);
+		}
+	}
+
+	// Handle message button click - navigate to chat with seller
+	function handleMessage(post: PostResponseDTO) {
+		if (post.user.id) {
+			const autoMessage = encodeURIComponent(`I'm interested in: ${post.title}`);
+			goto(`/messages/${post.user.id}?autoMessage=${autoMessage}`);
 		}
 	}
 
@@ -138,7 +147,14 @@
 				{:else}
 					<!-- Feed posts -->
 					{#each feedPosts as post (post.id)}
-						<PostCard {post} variant="feed" showUser={true} onLike={() => handleLike(post)} />
+						<PostCard 
+							{post} 
+							variant="feed" 
+							showUser={true} 
+							onClick={() => goto(`/post/${post.id}`)}
+							onLike={() => handleLike(post)}
+							onMessage={() => handleMessage(post)}
+						/>
 					{/each}
 
 					<!-- Infinite scroll trigger -->

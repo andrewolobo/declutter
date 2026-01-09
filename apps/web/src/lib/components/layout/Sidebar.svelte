@@ -180,7 +180,8 @@
 	<!-- Logo Section -->
 	<div class="px-3 py-4">
 		<div class="flex-1 flex justify-center">
-			<img src="/images/tunda-hub-logo.fw.png" alt="Tunda Plug" class="h-8 object-contain" />
+			<img src="/images/tunda-hub-logo.fw.png" alt="Tunda Plug" class="h-10
+			 object-contain" />
 		</div>
 	</div>
 
